@@ -1,4 +1,30 @@
 {{define "content"}}
+<style>
+    /* Mobile Card Layout */
+    .mobile-meeting-card {
+        background: var(--bs-card-bg, #fff);
+        border: 1px solid var(--bs-border-color, #e8ecf1);
+        border-radius: 12px;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .mobile-meeting-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .topic-box {
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        border-radius: 8px;
+        padding: 8px 12px;
+    }
+    [data-bs-theme="dark"] .mobile-meeting-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    [data-bs-theme="dark"] .topic-box {
+        background: #0f172a;
+    }
+</style>
+
 {{if .StudentName}}
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
@@ -20,7 +46,8 @@
     </div>
     <div class="card-body p-0">
         {{if .Meetings}}
-        <div class="table-responsive">
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -35,16 +62,48 @@
                     <tr>
                         <td class="fw-semibold text-body">{{.FormattedDate}}</td>
                         <td><small class="text-muted">{{.FormattedTime}}</small></td>
-                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td>{{if .Topic}}<span class="text-body">{{.Topic}}</span>{{else}}<span class="text-muted">-</span>{{end}}</td>
                         <td class="text-center">
-                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning">Terjadwal</span>{{end}}
-                            {{if eq .Status "selesai"}}<span class="badge bg-success">Selesai</span>{{end}}
-                            {{if eq .Status "batal"}}<span class="badge bg-danger">Batal</span>{{end}}
+                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Terjadwal</span>{{end}}
+                            {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Selesai</span>{{end}}
+                            {{if eq .Status "batal"}}<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Batal</span>{{end}}
                         </td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none d-block p-3">
+            <div class="row g-3">
+                {{range .Meetings}}
+                <div class="col-12">
+                    <div class="mobile-meeting-card p-3 shadow-sm">
+                        <!-- Top Row: Date & Status Badge -->
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-bold text-body fs-6 mb-0"><i class="ti ti-calendar me-1 text-primary"></i>{{.FormattedDate}}</div>
+                                <div class="text-muted small mt-0.5"><i class="ti ti-clock me-1"></i>{{.FormattedTime}}</div>
+                            </div>
+                            <div>
+                                {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">Terjadwal</span>{{end}}
+                                {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">Selesai</span>{{end}}
+                                {{if eq .Status "batal"}}<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1" style="font-size: 0.7rem;">Batal</span>{{end}}
+                            </div>
+                        </div>
+
+                        <!-- Topic Box -->
+                        <div class="topic-box mt-2">
+                            <div class="text-muted mb-1" style="font-size: 0.75rem;">Tema Belajar</div>
+                            <div class="text-body fw-medium" style="font-size: 0.85rem;">
+                                <i class="ti ti-book text-success me-1"></i> {{if .Topic}}{{.Topic}}{{else}}<span class="text-muted fst-italic">- belum ada tema -</span>{{end}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
         </div>
         {{else}}
         <div class="text-center py-5">
