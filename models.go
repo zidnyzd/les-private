@@ -43,6 +43,7 @@ type Assessment struct {
 type AssessmentMatrix struct {
 	MeetingID int
 	Date      string
+	Time      string
 	Topic     string
 	Items    []AssessmentItem
 }

@@ -674,12 +674,14 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 	var meetings []Meeting
 	rows, _ := db.Query(`SELECT id, student_id, '', date, start_time, end_time, topic, notes, status
 		FROM meetings WHERE student_id=? AND strftime('%Y-%m', date)=?
-		ORDER BY date`, studentID, month)
+		ORDER BY date, start_time`, studentID, month)
 	if rows != nil {
 		for rows.Next() {
 			var m Meeting
 			rows.Scan(&m.ID, &m.StudentID, &m.StudentName, &m.Date, &m.StartTime, &m.EndTime, &m.Topic, &m.Notes, &m.Status)
 			if m.Status == "selesai" {
+				m.FormattedDate = formatTanggalIndo(m.Date)
+				m.FormattedTime = fmt.Sprintf("%s - %s WIB", formatWaktuIndo(m.StartTime), formatWaktuIndo(m.EndTime))
 				meetings = append(meetings, m)
 			}
 		}
@@ -728,7 +730,7 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 			}
 			arows.Close()
 		}
-		matrix = append(matrix, AssessmentMatrix{MeetingID: m.ID, Date: formatTanggalIndo(m.Date), Topic: m.Topic, Items: items})
+		matrix = append(matrix, AssessmentMatrix{MeetingID: m.ID, Date: formatTanggalIndo(m.Date), Time: m.FormattedTime, Topic: m.Topic, Items: items})
 	}
 	if matrix == nil {
 		matrix = []AssessmentMatrix{}
