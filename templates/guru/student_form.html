@@ -63,13 +63,15 @@
 
                 <!-- Existing account -->
                 <div id="existing_section" class="mt-2">
-                    <input list="parents_list" name="parent_username" class="form-control" placeholder="Cari / ketik nama atau username ortu..." {{if .EditMode}}{{if .Student.ParentID}}value="{{.Student.ParentUsername}}"{{end}}{{end}} autocomplete="off">
-                    <datalist id="parents_list">
+                    <select name="parent_username" class="form-select" id="parent_select">
+                        <option value="">-- Pilih Akun Orang Tua --</option>
                         {{range .Parents}}
-                        <option value="{{.Username}}">{{.DisplayName}} (@{{.Username}})</option>
+                        <option value="{{.Username}}" {{if $.EditMode}}{{if eq .Username $.Student.ParentUsername}}selected{{end}}{{end}}>
+                            {{.DisplayName}} (@{{.Username}})
+                        </option>
                         {{end}}
-                    </datalist>
-                    <div class="form-text">Ketik nama atau username orang tua untuk mencari</div>
+                    </select>
+                    <div class="form-text">Pilih atau ketik untuk mencari akun orang tua</div>
                 </div>
 
                 <!-- New account -->
@@ -118,7 +120,24 @@
     </div>
 </div>
 
+<!-- TomSelect CSS & JS for Searchable Select Dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById('parent_select')) {
+        new TomSelect('#parent_select', {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "-- Cari / Pilih Akun Orang Tua --"
+        });
+    }
+});
+
 var isUsernameManuallyEdited = false;
 var isParentDisplayManuallyEdited = false;
 
