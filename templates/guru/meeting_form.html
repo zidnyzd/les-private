@@ -16,10 +16,10 @@
             <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
             <div class="mb-3">
                 <label class="form-label small fw-medium">Siswa <span class="text-danger">*</span></label>
-                <select name="student_id" class="form-select" required>
-                    <option value="">Pilih siswa...</option>
+                <select name="student_id" id="student_select" class="form-select" required>
+                    <option value="">-- Pilih / Cari Siswa --</option>
                     {{range .Students}}
-                    <option value="{{.ID}}" {{if eq .ID $.Meeting.StudentID}}selected{{end}}>{{.Name}}</option>
+                    <option value="{{.ID}}" {{if eq .ID $.Meeting.StudentID}}selected{{end}}>{{.Name}} {{if .Grade}}({{.Grade}}){{end}}</option>
                     {{end}}
                 </select>
             </div>
@@ -64,4 +64,50 @@
         </form>
     </div>
 </div>
+
+<!-- TomSelect CSS & JS for Searchable Select Dropdown -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+/* TomSelect Dark Mode Compatibility */
+[data-bs-theme="dark"] .ts-control {
+    background-color: var(--bs-body-bg, #0f172a) !important;
+    border-color: var(--bs-border-color, #334155) !important;
+    color: var(--bs-body-color, #f8fafc) !important;
+}
+[data-bs-theme="dark"] .ts-control input {
+    color: var(--bs-body-color, #f8fafc) !important;
+}
+[data-bs-theme="dark"] .ts-dropdown {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+[data-bs-theme="dark"] .ts-dropdown .option {
+    color: #cbd5e1 !important;
+}
+[data-bs-theme="dark"] .ts-dropdown .option.active,
+[data-bs-theme="dark"] .ts-dropdown .option:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+[data-bs-theme="dark"] .ts-wrapper.single .ts-control:after {
+    border-color: #94a3b8 transparent transparent transparent !important;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (document.getElementById('student_select')) {
+        new TomSelect('#student_select', {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "-- Cari / Pilih Siswa --"
+        });
+    }
+});
+</script>
 {{end}}
