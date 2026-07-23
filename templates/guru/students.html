@@ -6,63 +6,157 @@
 <div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
 {{end}}
 
+<style>
+    /* Table styling */
+    .table-custom tbody tr {
+        transition: background-color 0.15s ease-in-out;
+    }
+    .table-custom th {
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #8b95a5;
+        border-bottom-width: 1px;
+    }
+    .table-custom td {
+        font-size: 0.85rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    /* Mobile item list */
+    .mobile-student-card {
+        background: #fff;
+        border: 1px solid #e8ecf1;
+        border-radius: 12px;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .mobile-student-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    [data-bs-theme="dark"] .mobile-student-card {
+        background: #1e2024;
+        border-color: #2c3035;
+    }
+    [data-bs-theme="dark"] .btn-action-custom {
+        background: #262a2e;
+        border-color: #2c3035;
+        color: #cfd4da;
+    }
+    [data-bs-theme="dark"] .btn-action-custom:hover {
+        background: #2c3035;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="fs-4 fw-semibold mb-0"><i class="ti ti-users me-2 text-primary"></i>Siswa</h1>
-    <a href="/students/new" class="btn btn-primary btn-sm"><i class="ti ti-plus me-1"></i> Tambah</a>
+    <a href="/students/new" class="btn btn-primary btn-sm rounded-2 px-3"><i class="ti ti-plus me-1"></i> Tambah</a>
 </div>
 
 <!-- Search bar -->
 <div class="mb-3">
-    <form method="GET" action="/students" class="input-group">
-        <span class="input-group-text border-end-0"><i class="ti ti-search text-muted"></i></span>
-        <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama atau kelas..." value="{{.Search}}" style="box-shadow:none">
+    <form method="GET" action="/students" class="input-group input-group-sm">
+        <span class="input-group-text border-end-0 bg-white" style="border-radius: 8px 0 0 8px;"><i class="ti ti-search text-muted"></i></span>
+        <input type="text" name="q" class="form-control border-start-0" placeholder="Cari nama atau kelas..." value="{{.Search}}" style="box-shadow:none; border-radius: 0 8px 8px 0;">
         {{if .Search}}<a href="/students" class="btn btn-outline-secondary"><i class="ti ti-x"></i></a>{{end}}
     </form>
 </div>
 
-{{if .Students}}
-<!-- Student cards (mobile-friendly) -->
-<div class="row g-3">
-    {{range .Students}}
-    <div class="col-md-6 col-lg-4">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <div>
-                        <h6 class="fw-semibold mb-0">{{.Name}}</h6>
-                        <small class="text-muted">
-                            {{if .Age}}{{.Age}} tahun{{end}}
-                            {{if .Grade}} · {{.Grade}}{{end}}
-                        </small>
-                    </div>
-                    <div class="d-flex gap-1">
-                        <a href="/students/edit?id={{.ID}}" class="btn btn-outline-primary btn-sm rounded-circle" style="width:30px;height:30px;padding:0" title="Edit"><i class="ti ti-pencil" style="font-size:.8rem"></i></a>
-                        <a href="#" onclick="hapus({{.ID}},'{{.Name}}')" class="btn btn-outline-danger btn-sm rounded-circle" style="width:30px;height:30px;padding:0" title="Hapus"><i class="ti ti-trash" style="font-size:.8rem"></i></a>
+<!-- Student list -->
+<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+        {{if .Students}}
+        
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-custom table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Nama</th>
+                        <th class="text-center" style="width:100px">Usia</th>
+                        <th>Kelas</th>
+                        <th>Alamat</th>
+                        <th>Wali/Orang Tua</th>
+                        <th class="text-center pe-4" style="width:120px">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Students}}
+                    <tr>
+                        <td class="ps-4 fw-semibold text-body">{{.Name}}</td>
+                        <td class="text-center text-muted">{{if .Age}}{{.Age}} tahun{{else}}-{{end}}</td>
+                        <td>{{if .Grade}}{{.Grade}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td>{{if .Address}}{{.Address}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td>
+                            {{if .ParentName}}
+                            <span class="fw-medium text-dark"><i class="ti ti-user text-muted me-1"></i>{{.ParentName}}</span>
+                            {{else}}
+                            <span class="text-muted small italic"><i class="ti ti-user-off text-muted me-1"></i>Belum ada ortu</span>
+                            {{end}}
+                        </td>
+                        <td class="text-center pe-4">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a href="/students/edit?id={{.ID}}" class="btn btn-sm btn-action-custom text-muted border px-2 py-1 rounded-2" title="Edit"><i class="ti ti-pencil fs-6"></i></a>
+                                <a href="#" onclick="hapus({{.ID}},'{{.Name}}')" class="btn btn-sm btn-action-custom text-danger border px-2 py-1 rounded-2" title="Hapus"><i class="ti ti-trash fs-6"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none d-block p-3">
+            <div class="row g-3">
+                {{range .Students}}
+                <div class="col-12">
+                    <div class="mobile-student-card p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2.5">
+                            <div>
+                                <div class="fw-bold text-body fs-6 mb-0">{{.Name}}</div>
+                                <small class="text-muted" style="font-size: 0.75rem;">
+                                    {{if .Age}}{{.Age}} tahun{{end}}
+                                    {{if .Grade}} · {{.Grade}}{{end}}
+                                </small>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a href="/students/edit?id={{.ID}}" class="btn btn-sm btn-light text-muted px-2 py-1 rounded-2"><i class="ti ti-pencil"></i></a>
+                                <a href="#" onclick="hapus({{.ID}},'{{.Name}}')" class="btn btn-sm btn-light text-danger px-2 py-1 rounded-2"><i class="ti ti-trash"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="border-top pt-2" style="font-size: 0.8rem;">
+                            {{if .Address}}
+                            <div class="text-muted mb-1"><i class="ti ti-map-pin text-muted me-1"></i>{{.Address}}</div>
+                            {{end}}
+                            <div>
+                                <i class="ti ti-user text-muted me-1"></i>
+                                {{if .ParentName}}
+                                <span class="text-body fw-medium">{{.ParentName}}</span>
+                                {{else}}
+                                <span class="text-muted italic">Belum ada ortu</span>
+                                {{end}}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                {{if .Address}}
-                <div class="mb-1"><i class="ti ti-map-pin text-muted me-1" style="font-size:.85rem"></i><small class="text-muted">{{.Address}}</small></div>
-                {{end}}
-                {{if .ParentName}}
-                <div><i class="ti ti-user text-muted me-1" style="font-size:.85rem"></i><small class="text-muted">{{.ParentName}}</small></div>
-                {{else}}
-                <div><i class="ti ti-user-off text-muted me-1" style="font-size:.85rem"></i><small class="text-muted">Belum ada ortu</small></div>
                 {{end}}
             </div>
         </div>
+
+        {{else}}
+        <div class="text-center py-5">
+            <i class="ti ti-users text-muted" style="font-size:3rem"></i>
+            <h5 class="mt-3 text-muted">Belum ada siswa</h5>
+            <p class="text-muted small mb-3">Tambah siswa baru untuk mulai mencatat pertemuan.</p>
+            <a href="/students/new" class="btn btn-primary btn-sm rounded-2"><i class="ti ti-plus me-1"></i> Tambah Siswa</a>
+        </div>
+        {{end}}
     </div>
-    {{end}}
 </div>
-{{else}}
-<div class="card border-0 shadow-sm">
-    <div class="card-body text-center py-5">
-        <i class="ti ti-users text-muted" style="font-size:3rem"></i>
-        <h5 class="mt-3 text-muted">Belum ada siswa</h5>
-        <p class="text-muted small mb-3">Tambah siswa baru untuk mulai mencatat pertemuan.</p>
-        <a href="/students/new" class="btn btn-primary btn-sm"><i class="ti ti-plus me-1"></i> Tambah Siswa</a>
-    </div>
-</div>
-{{end}}
 
 <script>
 function hapus(id, name) {
