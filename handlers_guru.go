@@ -728,7 +728,7 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 			}
 			arows.Close()
 		}
-		matrix = append(matrix, AssessmentMatrix{MeetingID: m.ID, Date: m.Date, Topic: m.Topic, Items: items})
+		matrix = append(matrix, AssessmentMatrix{MeetingID: m.ID, Date: formatTanggalIndo(m.Date), Topic: m.Topic, Items: items})
 	}
 	if matrix == nil {
 		matrix = []AssessmentMatrix{}

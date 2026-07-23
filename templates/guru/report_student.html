@@ -62,7 +62,7 @@
                         <td class="fw-medium">{{$m.Date}}</td>
                         <td>{{if $m.Topic}}{{$m.Topic}}{{else}}-{{end}}</td>
                         {{range $item := $m.Items}}
-                            <td class="text-center" style="font-size:0.75rem{{if eq $item.Score "Belum Berkembang"}};background:#f8d7da{{else if eq $item.Score "Mulai Berkembang"}};background:#fff3cd{{else if eq $item.Score "Berkembang Sesuai Harapan"}};background:#d1ecf1{{else if eq $item.Score "Berkembang Sangat Baik"}};background:#d4edda{{end}}">
+                            <td class="text-center text-dark" style="font-size:0.75rem{{if eq $item.Score "Belum Berkembang"}};background:#f8d7da{{else if eq $item.Score "Mulai Berkembang"}};background:#fff3cd{{else if eq $item.Score "Berkembang Sesuai Harapan"}};background:#d1ecf1{{else if eq $item.Score "Berkembang Sangat Baik"}};background:#d4edda{{end}}">
                                 {{if $item.Score}}
                                     {{if eq $item.Score "Belum Berkembang"}}BB{{else if eq $item.Score "Mulai Berkembang"}}MB{{else if eq $item.Score "Berkembang Sesuai Harapan"}}BSH{{else}}BSB{{end}}
                                 {{else}}
