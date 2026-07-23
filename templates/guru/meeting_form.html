@@ -97,9 +97,10 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (document.getElementById('student_select')) {
-        new TomSelect('#student_select', {
+function initStudentTomSelect() {
+    var el = document.getElementById('student_select');
+    if (el && !el.tomselect) {
+        new TomSelect(el, {
             create: false,
             sortField: {
                 field: "text",
@@ -108,6 +109,11 @@ document.addEventListener("DOMContentLoaded", function() {
             placeholder: "-- Cari / Pilih Siswa --"
         });
     }
-});
+}
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(initStudentTomSelect, 50);
+} else {
+    document.addEventListener("DOMContentLoaded", initStudentTomSelect);
+}
 </script>
 {{end}}

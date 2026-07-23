@@ -152,9 +152,10 @@
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (document.getElementById('parent_select')) {
-        new TomSelect('#parent_select', {
+function initParentTomSelect() {
+    var el = document.getElementById('parent_select');
+    if (el && !el.tomselect) {
+        new TomSelect(el, {
             create: false,
             sortField: {
                 field: "text",
@@ -163,7 +164,12 @@ document.addEventListener("DOMContentLoaded", function() {
             placeholder: "-- Cari / Pilih Akun Orang Tua --"
         });
     }
-});
+}
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(initParentTomSelect, 50);
+} else {
+    document.addEventListener("DOMContentLoaded", initParentTomSelect);
+}
 
 var isUsernameManuallyEdited = false;
 var isParentDisplayManuallyEdited = false;
