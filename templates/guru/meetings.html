@@ -78,23 +78,24 @@
 <!-- Filters -->
 <div class="card border-0 shadow-sm rounded-3 mb-3">
     <div class="card-body py-2.5 px-3">
-        <form method="GET" action="/meetings" class="row g-2 align-items-end">
-            <div class="col-md-4">
+        <form id="filter_form" method="GET" action="/meetings" class="row g-2 align-items-end">
+            <div class="col-md-5">
                 <label class="form-label small mb-1 fw-medium text-muted">Siswa</label>
-                <select name="student" class="form-select form-select-sm rounded-2">
+                <select name="student" id="filter_student_select" class="form-select form-select-sm rounded-2" onchange="document.getElementById('filter_form').submit()">
                     <option value="">Semua Siswa</option>
                     {{range .Students}}
                     <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.FilterStudent}}selected{{end}}>{{.Name}}</option>
                     {{end}}
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-5">
                 <label class="form-label small mb-1 fw-medium text-muted">Tanggal</label>
-                <input type="date" name="date" class="form-control form-control-sm rounded-2" value="{{.FilterDate}}">
+                <input type="date" name="date" class="form-control form-control-sm rounded-2" value="{{.FilterDate}}" onchange="document.getElementById('filter_form').submit()">
             </div>
-            <div class="col-md-4 d-flex gap-1">
-                <button type="submit" class="btn btn-outline-primary btn-sm rounded-2 px-3"><i class="ti ti-filter me-1"></i>Filter</button>
-                <a href="/meetings" class="btn btn-outline-secondary btn-sm rounded-2"><i class="ti ti-x"></i></a>
+            <div class="col-md-2 d-flex gap-1">
+                {{if or .FilterStudent .FilterDate}}
+                <a href="/meetings" class="btn btn-outline-secondary btn-sm rounded-2 w-100"><i class="ti ti-x me-1"></i>Reset</a>
+                {{end}}
             </div>
         </form>
     </div>
@@ -206,6 +207,61 @@ function hapus(id, date) {
     if (confirm('Hapus pertemuan tanggal ' + date + '?\nSemua penilaian juga akan terhapus.')) {
         window.location = '/meetings/delete?id=' + id;
     }
+}
+</script>
+
+<!-- TomSelect CSS & JS for Searchable Select Filter -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+<style>
+/* TomSelect Dark Mode Compatibility */
+[data-bs-theme="dark"] .ts-control {
+    background-color: var(--bs-body-bg, #0f172a) !important;
+    border-color: var(--bs-border-color, #334155) !important;
+    color: var(--bs-body-color, #f8fafc) !important;
+}
+[data-bs-theme="dark"] .ts-control input {
+    color: var(--bs-body-color, #f8fafc) !important;
+}
+[data-bs-theme="dark"] .ts-dropdown {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+[data-bs-theme="dark"] .ts-dropdown .option {
+    color: #cbd5e1 !important;
+}
+[data-bs-theme="dark"] .ts-dropdown .option.active,
+[data-bs-theme="dark"] .ts-dropdown .option:hover {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+}
+[data-bs-theme="dark"] .ts-wrapper.single .ts-control:after {
+    border-color: #94a3b8 transparent transparent transparent !important;
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+function initFilterStudentTomSelect() {
+    var el = document.getElementById('filter_student_select');
+    if (el && !el.tomselect) {
+        var ts = new TomSelect(el, {
+            create: false,
+            sortField: {
+                field: "text",
+                direction: "asc"
+            },
+            placeholder: "Semua Siswa"
+        });
+        ts.on('change', function(value) {
+            document.getElementById('filter_form').submit();
+        });
+    }
+}
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(initFilterStudentTomSelect, 50);
+} else {
+    document.addEventListener("DOMContentLoaded", initFilterStudentTomSelect);
 }
 </script>
 {{end}}
