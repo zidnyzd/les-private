@@ -1,0 +1,127 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="/parent" class="text-decoration-none text-muted me-2"><i class="ti ti-arrow-left"></i></a>
+        <span class="fs-4 fw-semibold">Detail Pertemuan</span>
+    </div>
+    <span class="badge {{if eq .Meeting.Status "selesai"}}bg-success-subtle text-success border border-success-subtle{{else if eq .Meeting.Status "batal"}}bg-danger-subtle text-danger border border-danger-subtle{{else}}bg-warning-subtle text-warning border border-warning-subtle{{end}} rounded-pill px-3 py-1">
+        {{if eq .Meeting.Status "terjadwal"}}Terjadwal{{else if eq .Meeting.Status "selesai"}}Selesai{{else}}Batal{{end}}
+    </span>
+</div>
+
+<div class="row g-4">
+    <!-- Meeting info -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3 text-primary"><i class="ti ti-info-circle me-1"></i>Informasi Sesi</h6>
+                <table class="table table-sm mb-0">
+                    <tr><td class="text-muted small" style="width:35%">Siswa</td><td class="fw-semibold text-body">{{.Meeting.StudentName}}</td></tr>
+                    <tr><td class="text-muted small">Tanggal</td><td class="fw-medium text-body">{{.Meeting.FormattedDate}}</td></tr>
+                    <tr><td class="text-muted small">Waktu</td><td class="text-muted small">{{.Meeting.FormattedTime}}</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label small fw-medium text-muted mb-1"><i class="ti ti-book me-1 text-success"></i>Tema Belajar</label>
+                    <div class="p-2.5 rounded-2 bg-body-tertiary text-body fw-medium small">
+                        {{if .Meeting.Topic}}{{.Meeting.Topic}}{{else}}<span class="text-muted fst-italic">- belum ada tema -</span>{{end}}
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label small fw-medium text-muted mb-1"><i class="ti ti-notes me-1 text-info"></i>Catatan Guru</label>
+                    <div class="p-2.5 rounded-2 bg-body-tertiary text-body small">
+                        {{if .Meeting.Notes}}{{.Meeting.Notes}}{{else}}<span class="text-muted fst-italic">- tidak ada catatan tambahan -</span>{{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assessment 6 Aspects -->
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 py-3 bg-transparent">
+                <h5 class="mb-0 fs-6 fw-semibold text-body"><i class="ti ti-star me-2 text-warning"></i>Hasil Penilaian 6 Aspek</h5>
+                <small class="text-muted">Perkembangan kognitif & aktivitas siswa pada sesi belajar ini</small>
+            </div>
+            <div class="card-body p-0">
+                <!-- Desktop View -->
+                <div class="table-responsive d-none d-md-block">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:30%">Aspek Perkembangan</th>
+                                <th style="width:45%">Aktivitas / Kegiatan</th>
+                                <th class="text-center" style="width:25%">Hasil Penilaian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Aspects}}
+                            <tr>
+                                <td class="fw-semibold text-body small"><i class="ti ti-check-circle me-1.5 text-primary"></i>{{.Label}}</td>
+                                <td>
+                                    {{if .Kegiatan}}
+                                    <span class="text-body small">{{.Kegiatan}}</span>
+                                    {{else}}
+                                    <span class="text-muted small fst-italic">-</span>
+                                    {{end}}
+                                </td>
+                                <td class="text-center">
+                                    {{if eq .Score "Belum Berkembang"}}
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1">Belum Berkembang</span>
+                                    {{else if eq .Score "Mulai Berkembang"}}
+                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1">Mulai Berkembang</span>
+                                    {{else if eq .Score "Berkembang Sesuai Harapan"}}
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Sesuai Harapan</span>
+                                    {{else if eq .Score "Berkembang Sangat Baik"}}
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Sangat Baik</span>
+                                    {{else}}
+                                    <span class="text-muted small fst-italic">Belum dinilai</span>
+                                    {{end}}
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Mobile View -->
+                <div class="d-md-none d-block p-3">
+                    <div class="row g-3">
+                        {{range .Aspects}}
+                        <div class="col-12">
+                            <div class="p-3 border rounded-3 bg-body-tertiary">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-bold text-body small"><i class="ti ti-check-circle me-1 text-primary"></i>{{.Label}}</div>
+                                    <div>
+                                        {{if eq .Score "Belum Berkembang"}}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Belum Berkembang</span>
+                                        {{else if eq .Score "Mulai Berkembang"}}
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Mulai Berkembang</span>
+                                        {{else if eq .Score "Berkembang Sesuai Harapan"}}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sesuai Harapan</span>
+                                        {{else if eq .Score "Berkembang Sangat Baik"}}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sangat Baik</span>
+                                        {{else}}
+                                        <span class="text-muted small fst-italic" style="font-size:0.68rem;">Belum dinilai</span>
+                                        {{end}}
+                                    </div>
+                                </div>
+                                <div class="text-body small">
+                                    <span class="text-muted me-1">Kegiatan:</span>
+                                    {{if .Kegiatan}}{{.Kegiatan}}{{else}}<span class="text-muted fst-italic">-</span>{{end}}
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
