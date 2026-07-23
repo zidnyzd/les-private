@@ -79,7 +79,19 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Password Ortu</label>
-                        <input type="password" name="parent_new_password" class="form-control" placeholder="Password ortu (min 6 karakter)">
+                        <div class="input-group">
+                            <input type="password" id="parent_new_password" name="parent_new_password" class="form-control" placeholder="Min 6 karakter">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('parent_new_password',this)" tabindex="-1" title="Lihat/Sembunyikan Password">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateRandomPW()" type="button" title="Buat password acak">
+                                <i class="ti ti-refresh me-1"></i>Acak
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="copyParentCredentials()" type="button" title="Salin Username & Password">
+                                <i class="ti ti-copy me-1"></i>Salin
+                            </button>
+                        </div>
+                        <div id="copy_feedback" class="form-text text-success fw-medium" style="display:none;"><i class="ti ti-check me-1"></i>Username & Password berhasil disalin!</div>
                     </div>
                     <div class="form-text">Ortu bisa login & mengubah password nanti</div>
                 </div>
@@ -114,6 +126,47 @@ function autoGenerateParentUsername() {
                           .replace(/\s+/g, '')
                           .substring(0, 20);
     document.getElementById('parent_new_username').value = username;
+}
+
+function togglePW(id, btn) {
+    var inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+    } else {
+        inp.type = 'password';
+        btn.innerHTML = '<i class="ti ti-eye"></i>';
+    }
+}
+
+function generateRandomPW() {
+    var chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    var pw = 'Ortu#';
+    for (var i = 0; i < 4; i++) {
+        pw += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    var inp = document.getElementById('parent_new_password');
+    inp.value = pw;
+    inp.type = 'text'; // Tunjukkan password yang baru di-generate
+}
+
+function copyParentCredentials() {
+    var user = document.getElementById('parent_new_username').value;
+    var pass = document.getElementById('parent_new_password').value;
+    if (!user || !pass) {
+        alert('Mohon isi atau generate Username dan Password ortu terlebih dahulu.');
+        return;
+    }
+    var textToCopy = "Akun Ortu ZiRa Les Private:\nUsername: " + user + "\nPassword: " + pass;
+    navigator.clipboard.writeText(textToCopy).then(function() {
+        var fb = document.getElementById('copy_feedback');
+        fb.style.display = 'block';
+        setTimeout(function() {
+            fb.style.display = 'none';
+        }, 3000);
+    }).catch(function(err) {
+        alert('Gagal menyalin: ' + err);
+    });
 }
 </script>
 {{end}}
