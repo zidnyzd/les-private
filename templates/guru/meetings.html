@@ -102,7 +102,7 @@
                 <tbody>
                     {{range .Meetings}}
                     <tr>
-                        <td class="ps-4 fw-semibold text-dark">{{.FormattedDate}}</td>
+                        <td class="ps-4 fw-semibold text-body">{{.FormattedDate}}</td>
                         <td class="text-muted"><i class="ti ti-clock me-1 text-secondary"></i>{{.FormattedTime}}</td>
                         <td class="fw-semibold text-primary">{{.StudentName}}</td>
                         <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted small italic">- belum diisi -</span>{{end}}</td>
@@ -136,7 +136,7 @@
                                     {{slice .StudentName 0 1}}
                                 </div>
                                 <div>
-                                    <div class="fw-bold text-dark fs-6">{{.StudentName}}</div>
+                                    <div class="fw-bold text-body fs-6">{{.StudentName}}</div>
                                     <small class="text-muted" style="font-size: 0.75rem;"><i class="ti ti-clock me-1 text-secondary"></i>{{.FormattedTime}}</small>
                                 </div>
                             </div>
@@ -149,7 +149,7 @@
                         
                         <div class="bg-light bg-opacity-50 p-2.5 rounded-3 mb-3" style="font-size: 0.8rem;">
                             <div class="text-muted fw-semibold mb-0.5"><i class="ti ti-book text-success me-1"></i>Tema Belajar</div>
-                            <div class="text-dark">{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted italic">- belum ada tema -</span>{{end}}</div>
+                            <div class="text-body">{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted italic">- belum ada tema -</span>{{end}}</div>
                         </div>
 
                         <div class="d-flex justify-content-between align-items-center">
