@@ -118,7 +118,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 	for _, m := range meetings {
 		// Meeting title
 		pdf.SetFont("Helvetica", "B", 11)
-		pdf.CellFormat(0, 8, fmt.Sprintf("Pertemuan (%s)", m.Date), "", 1, "C", false, 0, "")
+		pdf.CellFormat(0, 8, fmt.Sprintf("Pertemuan (%s)", formatTanggalIndo(m.Date)), "", 1, "C", false, 0, "")
 		pdf.Ln(2)
 
 		// Table header: Aspek, Kegiatan, BB, MB, BSH, BSB
@@ -170,7 +170,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 				for col := 2; col <= 5; col++ {
 					mark := ""
 					if col == checkCol {
-						mark = "\u2713" // checkmark
+						mark = "v" // checkmark
 					}
 					pdf.CellFormat(colW[col], 7, mark, "1", 0, "C", false, 0, "")
 				}
