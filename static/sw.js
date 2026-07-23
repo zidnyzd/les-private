@@ -1,11 +1,11 @@
-const CACHE = 'lesprivate-v3';
+const CACHE = 'lesprivate-v4';
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(c => c.addAll([
-      '/static/manifest.json?v=2',
-      '/static/icon-192x192.png?v=2',
-      '/static/icon-512x512.png?v=2',
-      '/static/favicon.ico?v=2'
+      '/static/manifest.json?v=3',
+      '/static/icon-192x192.png?v=3',
+      '/static/icon-512x512.png?v=3',
+      '/static/favicon.png?v=3'
     ]))
   );
   self.skipWaiting();
