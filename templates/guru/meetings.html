@@ -40,7 +40,9 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         {{if .Meetings}}
-        <div class="table-responsive">
+        
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
@@ -49,31 +51,62 @@
                         <th>Siswa</th>
                         <th>Tema</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center" style="width:100px">Aksi</th>
+                        <th class="text-center" style="width:120px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{range .Meetings}}
                     <tr>
-                        <td class="fw-medium">{{.Date}}</td>
-                        <td><small>{{.StartTime}} - {{.EndTime}}</small></td>
-                        <td>{{.StudentName}}</td>
-                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td class="fw-semibold text-dark">{{.FormattedDate}}</td>
+                        <td><small class="text-muted">{{.FormattedTime}}</small></td>
+                        <td class="fw-medium">{{.StudentName}}</td>
+                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted small">- belum ada tema -</span>{{end}}</td>
                         <td class="text-center">
-                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning">Terjadwal</span>{{end}}
-                            {{if eq .Status "selesai"}}<span class="badge bg-success">Selesai</span>{{end}}
-                            {{if eq .Status "batal"}}<span class="badge bg-danger">Batal</span>{{end}}
+                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2.5 py-1">Terjadwal</span>{{end}}
+                            {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1">Selesai</span>{{end}}
+                            {{if eq .Status "batal"}}<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2.5 py-1">Batal</span>{{end}}
                         </td>
                         <td class="text-center">
-                            <a href="/meetings/detail?id={{.ID}}" class="text-decoration-none text-warning me-1" title="Nilai"><i class="ti ti-star"></i></a>
-                            <a href="/meetings/edit?id={{.ID}}" class="text-decoration-none text-muted me-1" title="Edit"><i class="ti ti-pencil"></i></a>
-                            <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="text-decoration-none text-danger" title="Hapus"><i class="ti ti-trash"></i></a>
+                            <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-light text-warning border-0 px-2 py-1" title="Nilai"><i class="ti ti-star"></i></a>
+                            <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-light text-muted border-0 px-2 py-1" title="Edit"><i class="ti ti-pencil"></i></a>
+                            <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-light text-danger border-0 px-2 py-1" title="Hapus"><i class="ti ti-trash"></i></a>
                         </td>
                     </tr>
                     {{end}}
                 </tbody>
             </table>
         </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none d-block">
+            {{range .Meetings}}
+            <div class="p-3 border-bottom position-relative">
+                <div class="d-flex justify-content-between align-items-start mb-1">
+                    <span class="fw-bold text-dark fs-6">{{.StudentName}}</span>
+                    {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-0.5 small">Terjadwal</span>{{end}}
+                    {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-0.5 small">Selesai</span>{{end}}
+                    {{if eq .Status "batal"}}<span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-0.5 small">Batal</span>{{end}}
+                </div>
+                <div class="text-muted small mb-2">
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                        <i class="ti ti-calendar text-primary"></i> <span>{{.FormattedDate}}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1 mb-1">
+                        <i class="ti ti-clock text-secondary"></i> <span>{{.FormattedTime}}</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-1">
+                        <i class="ti ti-book text-success"></i> <span>{{if .Topic}}{{.Topic}}{{else}}Belum ada tema{{end}}</span>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 justify-content-end mt-2">
+                    <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-outline-warning py-1 px-3 d-inline-flex align-items-center gap-1"><i class="ti ti-star"></i> Nilai</a>
+                    <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-outline-secondary py-1 px-2"><i class="ti ti-pencil"></i></a>
+                    <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-outline-danger py-1 px-2"><i class="ti ti-trash"></i></a>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
         {{else}}
         <div class="text-center py-5">
             <i class="ti ti-calendar text-muted" style="font-size:3rem"></i>
