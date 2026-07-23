@@ -168,11 +168,13 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 					checkCol = 5
 				}
 				for col := 2; col <= 5; col++ {
-					mark := ""
 					if col == checkCol {
-						mark = "v" // checkmark
+						pdf.SetFont("ZapfDingbats", "", 10)
+						pdf.CellFormat(colW[col], 7, "3", "1", 0, "C", false, 0, "")
+						pdf.SetFont("Helvetica", "", 8)
+					} else {
+						pdf.CellFormat(colW[col], 7, "", "1", 0, "C", false, 0, "")
 					}
-					pdf.CellFormat(colW[col], 7, mark, "1", 0, "C", false, 0, "")
 				}
 				pdf.Ln(-1)
 			}
@@ -180,11 +182,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		pdf.Ln(6)
 	}
 
-	// Keterangan Stimulasi
-	pdf.SetFont("Helvetica", "B", 11)
-	pdf.CellFormat(0, 8, "Keterangan Stimulasi", "", 1, "C", false, 0, "")
-	pdf.Ln(2)
-
+	// Keterangan Stimulasi (Tabel 2 kolom)
 	keterangan := []struct{ label, desc string }{
 		{"Membaca", "Kegiatan pengenalan huruf atau belajar teknis membaca (suku kata, kata, frasa, kalimat)"},
 		{"Berhitung", "Kegiatan pengenalan angka, konsep bilangan, konsep dasar matematika"},
@@ -193,20 +191,6 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		{"Sensory play", "Kegiatan untuk menstimulasi koordinasi mata dengan tangan, panca indera"},
 		{"Kreativitas", "Kegiatan untuk mengembangkan imajinasi dan keterampilan seni"},
 	}
-	pdf.SetFont("Helvetica", "", 9)
-	for _, k := range keterangan {
-		pdf.SetFont("Helvetica", "B", 9)
-		pdf.CellFormat(0, 6, k.label, "", 1, "L", false, 0, "")
-		pdf.SetFont("Helvetica", "", 9)
-		pdf.MultiCell(0, 5, k.desc, "", "L", false)
-		pdf.Ln(2)
-	}
-	pdf.Ln(4)
-
-	// Keterangan Skala
-	pdf.SetFont("Helvetica", "B", 11)
-	pdf.CellFormat(0, 8, "Keterangan Stimulasi", "", 1, "C", false, 0, "")
-	pdf.Ln(2)
 
 	skala := []struct{ num, label, desc string }{
 		{"1", "Belum Berkembang (BB)", "Belum ingin berkegiatan"},
@@ -214,22 +198,73 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		{"3", "Berkembang Sesuai Harapan (BSH)", "Mampu berkegiatan dan terstimulasi dengan baik"},
 		{"4", "Berkembang Sangat Baik (BSB)", "Mahir berkegiatan dan terstimulasi dengan sangat baik"},
 	}
+
+	pdf.SetFont("Helvetica", "B", 11)
+	pdf.CellFormat(0, 8, "Keterangan Stimulasi", "", 1, "C", false, 0, "")
+	pdf.Ln(2)
+
+	colWidthKet := []float64{35, 145}
+	pdf.SetFont("Helvetica", "B", 9)
+	pdf.SetFillColor(180, 198, 231) // B4C6E7
+	pdf.CellFormat(colWidthKet[0], 8, "Aspek", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidthKet[1], 8, "Kegiatan / Keterangan", "1", 1, "C", true, 0, "")
+
+	pdf.SetFont("Helvetica", "", 9)
+	for _, k := range keterangan {
+		x := pdf.GetX()
+		y := pdf.GetY()
+		
+		// Set font to bold for aspect label column
+		pdf.SetFont("Helvetica", "B", 9)
+		// We use MultiCell for description, so we measure its height first or wrap inside border
+		pdf.SetXY(x + colWidthKet[0], y)
+		pdf.MultiCell(colWidthKet[1], 5, k.desc, "1", "L", false)
+		
+		y2 := pdf.GetY()
+		height := y2 - y
+		
+		pdf.SetXY(x, y)
+		pdf.CellFormat(colWidthKet[0], height, k.label, "1", 0, "L", false, 0, "")
+		
+		pdf.SetXY(x, y2) // restore position to bottom of multicell row
+	}
+	pdf.Ln(6)
+
+	// Keterangan Skala (Tabel 3 kolom)
+	pdf.SetFont("Helvetica", "B", 11)
+	pdf.CellFormat(0, 8, "Keterangan Skala Penilaian", "", 1, "C", false, 0, "")
+	pdf.Ln(2)
+
+	colWidthSkala := []float64{15, 60, 105}
+	pdf.SetFont("Helvetica", "B", 9)
+	pdf.SetFillColor(180, 198, 231)
+	pdf.CellFormat(colWidthSkala[0], 8, "Skala", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidthSkala[1], 8, "Predikat", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidthSkala[2], 8, "Keterangan", "1", 1, "C", true, 0, "")
+
 	pdf.SetFont("Helvetica", "", 9)
 	for _, sl := range skala {
 		pdf.SetFont("Helvetica", "B", 9)
-		pdf.CellFormat(0, 6, fmt.Sprintf("%s. %s", sl.num, sl.label), "", 1, "L", false, 0, "")
+		pdf.CellFormat(colWidthSkala[0], 7, sl.num, "1", 0, "C", false, 0, "")
+		pdf.CellFormat(colWidthSkala[1], 7, sl.label, "1", 0, "L", false, 0, "")
 		pdf.SetFont("Helvetica", "", 9)
-		pdf.CellFormat(0, 5, sl.desc, "", 1, "L", false, 0, "")
-		pdf.Ln(2)
+		pdf.CellFormat(colWidthSkala[2], 7, sl.desc, "1", 1, "L", false, 0, "")
 	}
-	pdf.Ln(4)
+	pdf.Ln(6)
 
-	// Kesimpulan Stimulasi
+	// Kesimpulan Stimulasi (Tabel 2 kolom)
 	pdf.SetFont("Helvetica", "B", 11)
 	pdf.CellFormat(0, 8, "Kesimpulan Stimulasi", "", 1, "C", false, 0, "")
 	pdf.Ln(2)
 
-	pdf.SetFont("Helvetica", "", 10)
+	colWidthKes := []float64{10, 170}
+	pdf.SetFont("Helvetica", "B", 9)
+	pdf.SetFillColor(180, 198, 231)
+	pdf.CellFormat(colWidthKes[0], 8, "No", "1", 0, "C", true, 0, "")
+	pdf.CellFormat(colWidthKes[1], 8, "Kesimpulan Perkembangan", "1", 1, "C", true, 0, "")
+
+	pdf.SetFont("Helvetica", "", 9)
+	kIdx := 1
 	for idx, ak := range aspectKeys {
 		sm := summaryMap[ak]
 		if sm == nil || sm.Total == 0 {
@@ -274,11 +309,23 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 			progNarrative = "sangat mahir dalam berkegiatan, menunjukkan antusiasme yang tinggi, dan terstimulasi dengan sangat maksimal."
 		}
 
-		finalText := fmt.Sprintf("%d. Dalam kegiatan %s, %s telah belajar dan mempraktikkan: %s. Secara keseluruhan, %s %s Maka kemampuan %s dalam kegiatan %s dinyatakan %s.",
-			idx+1, aspectLabels[idx], s.Name, kegNarrative, s.Name, progNarrative, s.Name, aspectLabels[idx], statusText)
+		finalText := fmt.Sprintf("Dalam kegiatan %s, %s telah belajar dan mempraktikkan: %s. Secara keseluruhan, %s %s Maka kemampuan %s dalam kegiatan %s dinyatakan %s.",
+			aspectLabels[idx], s.Name, kegNarrative, s.Name, progNarrative, s.Name, aspectLabels[idx], statusText)
 
-		pdf.MultiCell(0, 5, finalText, "", "L", false)
-		pdf.Ln(2.5)
+		x := pdf.GetX()
+		y := pdf.GetY()
+		
+		pdf.SetXY(x + colWidthKes[0], y)
+		pdf.MultiCell(colWidthKes[1], 5, finalText, "1", "L", false)
+		
+		y2 := pdf.GetY()
+		height := y2 - y
+		
+		pdf.SetXY(x, y)
+		pdf.CellFormat(colWidthKes[0], height, fmt.Sprintf("%d", kIdx), "1", 0, "C", false, 0, "")
+		
+		pdf.SetXY(x, y2)
+		kIdx++
 	}
 
 	// Tanda tangan
