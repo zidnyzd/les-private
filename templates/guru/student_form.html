@@ -115,9 +115,14 @@
 
 <script>
 var isUsernameManuallyEdited = false;
+var isParentDisplayManuallyEdited = false;
 
 document.getElementById('parent_new_username').addEventListener('input', function() {
     isUsernameManuallyEdited = true;
+});
+
+document.getElementById('parent_new_display').addEventListener('input', function() {
+    isParentDisplayManuallyEdited = true;
 });
 
 function toggleParentMode(){
@@ -143,14 +148,16 @@ function autoGenerateParentUsername() {
 function quickFillParentInfo() {
     var studentName = document.getElementById('student_name').value.trim();
     if (!studentName) return;
-    var firstName = studentName.split(' ')[0];
     
-    // Hanya auto-fill jika Nama Ortu masih kosong
-    var displayInp = document.getElementById('parent_new_display');
-    if (!displayInp.value) {
-        displayInp.value = "Ortu " + firstName;
-        isUsernameManuallyEdited = false;
-        autoGenerateParentUsername();
+    // Hanya auto-update jika Nama Ortu belum pernah diedit secara manual oleh Guru
+    if (!isParentDisplayManuallyEdited) {
+        var rawFirstName = studentName.split(' ')[0];
+        if (rawFirstName.length > 0) {
+            // Capitalize huruf pertama nama panggilan siswa
+            var firstName = rawFirstName.charAt(0).toUpperCase() + rawFirstName.slice(1);
+            document.getElementById('parent_new_display').value = "Ortu " + firstName;
+            autoGenerateParentUsername();
+        }
     }
     
     // Auto-generate password acak jika password masih kosong
