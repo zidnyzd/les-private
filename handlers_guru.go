@@ -274,6 +274,9 @@ func execGuruTemplate(w http.ResponseWriter, tmplPath string, data interface{}) 
 
 // Helper format tanggal Indonesia
 func formatTanggalIndo(dateStr string) string {
+	if len(dateStr) >= 10 {
+		dateStr = dateStr[:10]
+	}
 	t, err := time.Parse("2006-01-02", dateStr)
 	if err != nil {
 		return dateStr
@@ -507,6 +510,8 @@ func handleMeetingDetail(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/meetings", http.StatusSeeOther)
 		return
 	}
+	m.FormattedDate = formatTanggalIndo(m.Date)
+	m.FormattedTime = fmt.Sprintf("%s - %s WIB", formatWaktuIndo(m.StartTime), formatWaktuIndo(m.EndTime))
 
 	if r.Method == http.MethodPost {
 		r.ParseForm()
