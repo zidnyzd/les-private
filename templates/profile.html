@@ -50,15 +50,24 @@
                     <input type="hidden" name="action" value="password">
                     <div class="mb-3">
                         <label class="form-label small fw-medium">Kata Sandi Lama</label>
-                        <input type="password" name="old_password" class="form-control" required>
+                        <div class="input-group">
+                            <input type="password" name="old_password" id="old-password" class="form-control" required>
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('old-password',this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-medium">Kata Sandi Baru</label>
-                        <input type="password" name="new_password" class="form-control" required minlength="6" maxlength="72">
+                        <div class="input-group">
+                            <input type="password" name="new_password" id="new-password" class="form-control" required minlength="6" maxlength="72">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('new-password',this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-medium">Konfirmasi Sandi Baru</label>
-                        <input type="password" name="confirm_password" class="form-control" required minlength="6" maxlength="72">
+                        <div class="input-group">
+                            <input type="password" name="confirm_password" id="confirm-password" class="form-control" required minlength="6" maxlength="72">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('confirm-password',this)" tabindex="-1"><i class="ti ti-eye"></i></button>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-warning btn-sm"><i class="ti ti-lock"></i> Ubah Sandi</button>
                 </form>
@@ -66,4 +75,7 @@
         </div>
     </div>
 </div>
+<script>
+    function togglePW(id,btn){var inp=document.getElementById(id);if(inp.type==='password'){inp.type='text';btn.innerHTML='<i class="ti ti-eye-off"></i>';}else{inp.type='password';btn.innerHTML='<i class="ti ti-eye"></i>';}}
+</script>
 {{end}}
