@@ -63,8 +63,15 @@
 
                 <!-- Existing account -->
                 <div id="existing_section" class="mt-2">
-                    <input type="text" name="parent_username" class="form-control" placeholder="Username akun ortu" {{if .EditMode}}{{if .Student.ParentID}}value="{{.Student.ParentUsername}}"{{end}}{{end}}>
-                    <div class="form-text">Ketik username akun orang tua yang sudah terdaftar</div>
+                    <select name="parent_username" class="form-select">
+                        <option value="">-- Pilih Akun Orang Tua --</option>
+                        {{range .Parents}}
+                        <option value="{{.Username}}" {{if $.EditMode}}{{if eq .Username $.Student.ParentUsername}}selected{{end}}{{end}}>
+                            {{.DisplayName}} (@{{.Username}})
+                        </option>
+                        {{end}}
+                    </select>
+                    <div class="form-text">Pilih akun orang tua yang sudah terdaftar</div>
                 </div>
 
                 <!-- New account -->
