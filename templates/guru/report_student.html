@@ -118,13 +118,22 @@
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    var dmode = document.documentElement.getAttribute('data-bs-theme');
+    var textColor = dmode === 'dark' ? '#cfd4da' : '#5e6870';
     var options = {
-        chart: { type: 'bar', height: 300, toolbar: { show: false } },
+        chart: { type: 'bar', height: 300, toolbar: { show: false }, background: 'transparent' },
         series: [{ name: 'Berkembang Sangat Baik (BSB)', data: {{.ChartSeries}} }],
-        xaxis: { categories: {{.ChartLabels}}, labels: { style: { fontSize: '12px' } } },
+        xaxis: { 
+            categories: {{.ChartLabels}}, 
+            labels: { style: { fontSize: '12px', colors: textColor } } 
+        },
+        yaxis: {
+            labels: { style: { colors: textColor } }
+        },
         colors: ['#22c55e'],
         plotOptions: { bar: { borderRadius: 6, columnWidth: '60%' } },
-        dataLabels: { enabled: true }
+        dataLabels: { enabled: true },
+        theme: { mode: dmode }
     };
     new ApexCharts(document.querySelector('#chart'), options).render();
 });

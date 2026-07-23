@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -17,8 +18,8 @@ type ParentReportData struct {
 	NextMonth   string
 	HasData     bool
 	Summary     []AspectSummary
-	ChartLabels string // JSON
-	ChartSeries string // JSON
+	ChartLabels template.JS // JSON
+	ChartSeries template.JS // JSON
 }
 
 func handleParentDashboard(w http.ResponseWriter, r *http.Request) {
@@ -189,8 +190,8 @@ func handleParentReport(w http.ResponseWriter, r *http.Request) {
 		NextMonth:   next,
 		HasData:     len(meetings) > 0,
 		Summary:     summary,
-		ChartLabels: string(labelsJSON),
-		ChartSeries: string(dataJSON),
+		ChartLabels: template.JS(labelsJSON),
+		ChartSeries: template.JS(dataJSON),
 	}
 
 	tmpl := getParentLayout("templates/ortu/report.html")

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"strconv"
@@ -610,8 +611,8 @@ type StudentReportData struct {
 	Meetings    []Meeting
 	Matrix      []AssessmentMatrix
 	Summary     []AspectSummary
-	ChartLabels string // JSON
-	ChartSeries string // JSON
+	ChartLabels template.JS // JSON
+	ChartSeries template.JS // JSON
 	HasData     bool
 }
 
@@ -767,8 +768,8 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 		Meetings:    meetings,
 		Matrix:      matrix,
 		Summary:     summary,
-		ChartLabels: string(labelsJSON),
-		ChartSeries: string(dataJSON),
+		ChartLabels: template.JS(labelsJSON),
+		ChartSeries: template.JS(dataJSON),
 		HasData:     len(meetings) > 0,
 	}
 	execGuruTemplate(w, "templates/guru/report_student.html", data)
