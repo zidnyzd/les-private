@@ -16,7 +16,7 @@
             <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
             <div class="mb-3">
                 <label class="form-label small fw-medium">Nama Siswa <span class="text-danger">*</span></label>
-                <input type="text" name="name" class="form-control" required value="{{.Student.Name}}" placeholder="Nama lengkap">
+                <input type="text" id="student_name" name="name" class="form-control" required value="{{.Student.Name}}" placeholder="Nama lengkap" oninput="quickFillParentInfo()">
             </div>
             <div class="row g-2 mb-3">
                 <div class="col-4">
@@ -59,6 +59,9 @@
                 <div class="form-check mb-2">
                     <input class="form-check-input" type="radio" name="parent_mode" id="mode_new" value="new" onchange="toggleParentMode()">
                     <label class="form-check-label small" for="mode_new">Buat akun ortu baru</label>
+                    <button type="button" id="btn_quick_fill" class="btn btn-link btn-sm text-decoration-none p-0 ms-2" style="font-size: 0.75rem; display:none;" onclick="applyQuickFillParent()">
+                        <i class="ti ti-bolt text-warning me-0.5"></i> Auto-fill Ortu dari Nama Siswa
+                    </button>
                 </div>
 
                 <!-- Existing account -->
@@ -128,6 +131,39 @@ function autoGenerateParentUsername() {
     document.getElementById('parent_new_username').value = username;
 }
 
+function quickFillParentInfo() {
+    var studentName = document.getElementById('student_name').value.trim();
+    var btn = document.getElementById('btn_quick_fill');
+    if (studentName.length > 0) {
+        var firstName = studentName.split(' ')[0];
+        btn.innerHTML = '<i class="ti ti-bolt text-warning me-0.5"></i> Isi otomatis "Ortu ' + firstName + '"';
+        btn.style.display = 'inline-block';
+    } else {
+        btn.style.display = 'none';
+    }
+}
+
+function applyQuickFillParent() {
+    var studentName = document.getElementById('student_name').value.trim();
+    if (!studentName) return;
+    var firstName = studentName.split(' ')[0];
+    
+    // Switch radio ke 'new'
+    document.getElementById('mode_new').checked = true;
+    toggleParentMode();
+    
+    // Set Nama Ortu
+    var parentDisplayName = "Ortu " + firstName;
+    document.getElementById('parent_new_display').value = parentDisplayName;
+    
+    // Reset flag manual edit agar username auto-generated dari Nama Ortu yang baru
+    isUsernameManuallyEdited = false;
+    autoGenerateParentUsername();
+    
+    // Generate password acak sekalian
+    generateRandomPW();
+}
+</script>
 function togglePW(id, btn) {
     var inp = document.getElementById(id);
     if (inp.type === 'password') {
