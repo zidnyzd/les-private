@@ -78,7 +78,12 @@
                     </div>
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Username Ortu (Login ID)</label>
-                        <input type="text" id="parent_new_username" name="parent_new_username" class="form-control" placeholder="Username (misal: mamabudi)">
+                        <div class="input-group">
+                            <input type="text" id="parent_new_username" name="parent_new_username" class="form-control" placeholder="Username (misal: mamabudi)">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copySingleField('parent_new_username', 'Username')" title="Salin Username saja">
+                                <i class="ti ti-copy me-1"></i>Salin Username
+                            </button>
+                        </div>
                     </div>
                     <div class="mb-2">
                         <label class="form-label small text-muted mb-1">Password Ortu</label>
@@ -87,14 +92,17 @@
                             <button type="button" class="btn btn-outline-secondary" onclick="togglePW('parent_new_password',this)" tabindex="-1" title="Lihat/Sembunyikan Password">
                                 <i class="ti ti-eye"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateRandomPW()" type="button" title="Buat password acak">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateRandomPW()" title="Buat password acak">
                                 <i class="ti ti-refresh me-1"></i>Acak
                             </button>
-                            <button type="button" class="btn btn-outline-success btn-sm" onclick="copyParentCredentials()" type="button" title="Salin Username & Password">
-                                <i class="ti ti-copy me-1"></i>Salin
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="copySingleField('parent_new_password', 'Password')" title="Salin Password saja">
+                                <i class="ti ti-copy me-1"></i>Salin Pass
+                            </button>
+                            <button type="button" class="btn btn-success btn-sm" onclick="copyParentCredentials()" title="Salin Username & Password Sekaligus">
+                                <i class="ti ti-copy me-1"></i>Salin Semua
                             </button>
                         </div>
-                        <div id="copy_feedback" class="form-text text-success fw-medium" style="display:none;"><i class="ti ti-check me-1"></i>Username & Password berhasil disalin!</div>
+                        <div id="copy_feedback" class="form-text text-success fw-medium" style="display:none;"><i class="ti ti-check me-1"></i><span id="copy_feedback_msg">Berhasil disalin!</span></div>
                     </div>
                     <div class="form-text">Ortu bisa login & mengubah password nanti</div>
                 </div>
@@ -186,6 +194,19 @@ function generateRandomPW() {
     inp.type = 'text'; // Tunjukkan password yang baru di-generate
 }
 
+function copySingleField(fieldId, labelName) {
+    var val = document.getElementById(fieldId).value;
+    if (!val) {
+        alert('Mohon isi ' + labelName + ' terlebih dahulu.');
+        return;
+    }
+    navigator.clipboard.writeText(val).then(function() {
+        showCopyFeedback(labelName + ' berhasil disalin!');
+    }).catch(function(err) {
+        alert('Gagal menyalin: ' + err);
+    });
+}
+
 function copyParentCredentials() {
     var user = document.getElementById('parent_new_username').value;
     var pass = document.getElementById('parent_new_password').value;
@@ -195,14 +216,20 @@ function copyParentCredentials() {
     }
     var textToCopy = "Akun Ortu ZiRa Les Private:\nUsername: " + user + "\nPassword: " + pass;
     navigator.clipboard.writeText(textToCopy).then(function() {
-        var fb = document.getElementById('copy_feedback');
-        fb.style.display = 'block';
-        setTimeout(function() {
-            fb.style.display = 'none';
-        }, 3000);
+        showCopyFeedback('Username & Password berhasil disalin sekaligus!');
     }).catch(function(err) {
         alert('Gagal menyalin: ' + err);
     });
+}
+
+function showCopyFeedback(msg) {
+    var fb = document.getElementById('copy_feedback');
+    var fbMsg = document.getElementById('copy_feedback_msg');
+    fbMsg.innerText = msg;
+    fb.style.display = 'block';
+    setTimeout(function() {
+        fb.style.display = 'none';
+    }, 3000);
 }
 </script>
 {{end}}
