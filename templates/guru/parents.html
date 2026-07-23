@@ -157,13 +157,13 @@
 
 <!-- Modal Reset Password -->
 <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px">
         <div class="modal-content border-0 shadow">
             <div class="modal-header border-bottom-0 pb-0">
                 <h5 class="modal-title fs-6 fw-bold"><i class="ti ti-key text-warning me-2"></i>Reset Password Ortu</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form method="POST" action="/parents/reset-password">
+            <form id="reset_password_form" method="POST" action="/parents/reset-password">
                 <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
                 <input type="hidden" name="parent_id" id="reset_parent_id">
                 <div class="modal-body py-3">
@@ -172,20 +172,29 @@
                     </p>
                     <div class="mb-3">
                         <label class="form-label small fw-medium">Password Baru</label>
-                        <div class="input-group">
+                        <div class="input-group mb-2">
                             <input type="password" id="reset_new_password" name="new_password" class="form-control" required minlength="6" placeholder="Min 6 karakter">
-                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('reset_new_password',this)" tabindex="-1">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('reset_new_password',this)" tabindex="-1" title="Lihat/Sembunyikan Password">
                                 <i class="ti ti-eye"></i>
                             </button>
-                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateResetPW()">
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateResetPW()" title="Buat password acak">
                                 <i class="ti ti-refresh me-1"></i>Acak
                             </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="copyResetSinglePW()" tabindex="-1" title="Salin Password saja">
+                                <i class="ti ti-copy"></i>
+                            </button>
                         </div>
+                        <div id="reset_copy_feedback" class="form-text text-success fw-medium" style="display:none;"><i class="ti ti-check me-1"></i><span id="reset_copy_msg">Berhasil disalin!</span></div>
                     </div>
                 </div>
-                <div class="modal-footer border-top-0 pt-0">
-                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-warning btn-sm"><i class="ti ti-check me-1"></i> Simpan Password Baru</button>
+                <div class="modal-footer border-top-0 pt-0 d-flex flex-column gap-2">
+                    <button type="button" class="btn btn-success btn-sm w-100 py-1.5" onclick="copyAndSubmitResetForm()">
+                        <i class="ti ti-copy me-1"></i> Salin Akun & Simpan Password
+                    </button>
+                    <div class="d-flex justify-content-end gap-2 w-100">
+                        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-warning btn-sm"><i class="ti ti-check me-1"></i> Simpan Saja</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -193,11 +202,17 @@
 </div>
 
 <script>
+var currentResetUsername = '';
+
 function openResetModal(id, name, user) {
+    currentResetUsername = user;
     document.getElementById('reset_parent_id').value = id;
     document.getElementById('reset_parent_name').innerText = name;
     document.getElementById('reset_parent_user').innerText = '@' + user;
     document.getElementById('reset_new_password').value = '';
+    
+    // Auto generate password acak siap pakai saat modal dibuka
+    generateResetPW();
     
     var modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
     modal.show();
@@ -223,6 +238,47 @@ function generateResetPW() {
     var inp = document.getElementById('reset_new_password');
     inp.value = pw;
     inp.type = 'text';
+}
+
+function copyResetSinglePW() {
+    var pw = document.getElementById('reset_new_password').value;
+    if (!pw) {
+        alert('Password baru belum terisi.');
+        return;
+    }
+    navigator.clipboard.writeText(pw).then(function() {
+        showResetCopyFeedback('Password berhasil disalin!');
+    }).catch(function(err) {
+        alert('Gagal menyalin: ' + err);
+    });
+}
+
+function copyAndSubmitResetForm() {
+    var pw = document.getElementById('reset_new_password').value;
+    if (pw.length < 6) {
+        alert('Password minimal 6 karakter.');
+        return;
+    }
+    var textToCopy = "Password Akun Ortu ZiRa Les Private Berhasil Di-reset:\nUsername: " + currentResetUsername + "\nPassword Baru: " + pw;
+    navigator.clipboard.writeText(textToCopy).then(function() {
+        showResetCopyFeedback('Kredensial berhasil disalin ke clipboard!');
+        setTimeout(function() {
+            document.getElementById('reset_password_form').submit();
+        }, 600);
+    }).catch(function(err) {
+        // Tetap submit meskipun clipboard browser menolak
+        document.getElementById('reset_password_form').submit();
+    });
+}
+
+function showResetCopyFeedback(msg) {
+    var fb = document.getElementById('reset_copy_feedback');
+    var msgEl = document.getElementById('reset_copy_msg');
+    msgEl.innerText = msg;
+    fb.style.display = 'block';
+    setTimeout(function() {
+        fb.style.display = 'none';
+    }, 3000);
 }
 </script>
 {{end}}
