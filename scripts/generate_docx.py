@@ -346,7 +346,10 @@ def main():
     sig_table.rows[1].height = Twips(600)
     sig_table.rows[2].height = Twips(600)
 
-    for i, name in enumerate(['_________________', '_________________']):
+    # Get teacher name from args
+    teacher_name = sys.argv[4] if len(sys.argv) > 4 else "Guru Pengajar"
+
+    for i, name in enumerate([teacher_name, 'Admin']):
         cell = sig_table.rows[3].cells[i]
         cell.text = ''
         p = cell.paragraphs[0]
