@@ -140,7 +140,7 @@ def main():
     # Summary
     aspect_keys = ['pra_membaca', 'menulis', 'berhitung', 'sensory_play', 'kreativitas', 'brain_game']
     aspect_labels = ['Pra membaca', 'Menulis', 'Berhitung', 'Sensory play', 'Kreativitas', 'Brain game']
-    summary = {k: {'BB': 0, 'MB': 0, 'BSH': 0, 'BSB': 0, 'Total': 0} for k in aspect_keys}
+    summary = {k: {'BB': 0, 'MB': 0, 'BSH': 0, 'BSB': 0, 'Total': 0, 'kegiatan_list': []} for k in aspect_keys}
     
     for mid in meeting_ids:
         if mid in assessments:
@@ -148,6 +148,9 @@ def main():
                 if k in assessments[mid]:
                     for entry in assessments[mid][k]:
                         score = entry['score']
+                        keg = entry['kegiatan']
+                        if keg and keg != '-':
+                            summary[k]['kegiatan_list'].append(keg.strip())
                         if score == 'Belum Berkembang':
                             summary[k]['BB'] += 1
                         elif score == 'Mulai Berkembang':
@@ -320,7 +323,28 @@ def main():
             ('Berkembang Sangat Baik', s['BSB']),
         ]
         dominant = max(levels, key=lambda x: x[1])
-        add_para(doc, f'{idx+1}. {student["name"]} dalam kegiatan {al}: {dominant[0]}', size=12, space_after=3)
+
+        # Formulate rich narrative based on entries
+        kegs = s['kegiatan_list']
+        if len(kegs) > 1:
+            keg_narrative = ", ".join(kegs[:-1]) + ", dan " + kegs[-1]
+        elif len(kegs) == 1:
+            keg_narrative = kegs[0]
+        else:
+            keg_narrative = "aktivitas stimulasi harian"
+
+        status_text = dominant[0]
+        if status_text == 'Belum Berkembang':
+            prog_narrative = "belum ingin berkegiatan dan masih memerlukan bimbingan serta stimulasi yang lebih intensif."
+        elif status_text == 'Mulai Berkembang':
+            prog_narrative = "mulai menunjukkan ketertarikan untuk berkegiatan, namun masih memerlukan bantuan dan stimulasi lebih lanjut."
+        elif status_text == 'Berkembang Sesuai Harapan':
+            prog_narrative = "mampu mengikuti kegiatan dengan baik, aktif berpartisipasi, dan terstimulasi sesuai target perkembangan."
+        else: # Berkembang Sangat Baik
+            prog_narrative = "sangat mahir dalam berkegiatan, menunjukkan antusiasme yang tinggi, dan terstimulasi dengan sangat maksimal."
+
+        final_text = f"{idx+1}. Dalam kegiatan {al}, {student['name']} telah belajar dan mempraktikkan: {keg_narrative}. Secara keseluruhan, {student['name']} {prog_narrative} Maka kemampuan {student['name']} dalam kegiatan {al} dinyatakan {status_text}."
+        add_para(doc, final_text, size=11, space_after=4)
 
     # === TANDA TANGAN ===
     today = datetime.now()

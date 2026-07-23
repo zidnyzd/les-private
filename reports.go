@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/go-pdf/fpdf"
@@ -46,8 +47,10 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 	aspectLabels := []string{"Pra membaca", "Menulis", "Berhitung", "Sensory play", "Kreativitas", "Brain game"}
 	assessments := map[int]map[string][]map[string]string{} // meeting_id -> aspect -> [{kegiatan, score}]
 	summaryMap := map[string]*AspectSummary{}
-	for _, a := range aspects {
-		summaryMap[a.Key] = &AspectSummary{Key: a.Key, Label: a.Label}
+	kegiatanLists := map[string][]string{}
+	for _, ak := range aspectKeys {
+		summaryMap[ak] = &AspectSummary{Key: ak}
+		kegiatanLists[ak] = []string{}
 	}
 
 	meetingIDs := []int{}
@@ -68,6 +71,12 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 					assessments[mid][k] = append(assessments[mid][k], map[string]string{
 						"kegiatan": kg, "score": v,
 					})
+					
+					cleanedKeg := strings.TrimSpace(kg)
+					if cleanedKeg != "" && cleanedKeg != "-" {
+						kegiatanLists[k] = append(kegiatanLists[k], cleanedKeg)
+					}
+
 					if sm, ok := summaryMap[k]; ok {
 						switch v {
 						case "Belum Berkembang":
@@ -220,7 +229,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 	pdf.CellFormat(0, 8, "Kesimpulan Stimulasi", "", 1, "C", false, 0, "")
 	pdf.Ln(2)
 
-	pdf.SetFont("Helvetica", "", 9)
+	pdf.SetFont("Helvetica", "", 10)
 	for idx, ak := range aspectKeys {
 		sm := summaryMap[ak]
 		if sm == nil || sm.Total == 0 {
@@ -241,9 +250,35 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 				dominant = l
 			}
 		}
-		text := fmt.Sprintf("%d. %s dalam kegiatan %s: %s", idx+1, s.Name, aspectLabels[idx], dominant.label)
-		pdf.MultiCell(0, 6, text, "", "L", false)
-		pdf.Ln(2)
+
+		// Formulate rich narrative based on entries
+		kegs := kegiatanLists[ak]
+		var kegNarrative string
+		if len(kegs) > 1 {
+			kegNarrative = strings.Join(kegs[:len(kegs)-1], ", ") + ", dan " + kegs[len(kegs)-1]
+		} else if len(kegs) == 1 {
+			kegNarrative = kegs[0]
+		} else {
+			kegNarrative = "aktivitas stimulasi harian"
+		}
+
+		statusText := dominant.label
+		var progNarrative string
+		if statusText == "Belum Berkembang" {
+			progNarrative = "belum ingin berkegiatan dan masih memerlukan bimbingan serta stimulasi yang lebih intensif."
+		} else if statusText == "Mulai Berkembang" {
+			progNarrative = "mulai menunjukkan ketertarikan untuk berkegiatan, namun masih memerlukan bantuan dan stimulasi lebih lanjut."
+		} else if statusText == "Berkembang Sesuai Harapan" {
+			progNarrative = "mampu mengikuti kegiatan dengan baik, aktif berpartisipasi, dan terstimulasi sesuai target perkembangan."
+		} else { // Berkembang Sangat Baik
+			progNarrative = "sangat mahir dalam berkegiatan, menunjukkan antusiasme yang tinggi, dan terstimulasi dengan sangat maksimal."
+		}
+
+		finalText := fmt.Sprintf("%d. Dalam kegiatan %s, %s telah belajar dan mempraktikkan: %s. Secara keseluruhan, %s %s Maka kemampuan %s dalam kegiatan %s dinyatakan %s.",
+			idx+1, aspectLabels[idx], s.Name, kegNarrative, s.Name, progNarrative, s.Name, aspectLabels[idx], statusText)
+
+		pdf.MultiCell(0, 5, finalText, "", "L", false)
+		pdf.Ln(2.5)
 	}
 
 	// Tanda tangan
