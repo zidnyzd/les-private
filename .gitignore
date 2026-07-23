@@ -1,37 +1,26 @@
-# Binary
-les-app
-*.exe
+# Proprietary Source Code (Do not push)
+*.go
+go.mod
+go.sum
 
 # Database
-les.db
-les.db-journal
-les.db-wal
-les.db-shm
-les.db*
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
 
-# Environment
+# Environment and Credentials
 .env
 .env.*
 *.pem
 *.key
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
+# Internal Wiki and Planning
+PLAN.md
+REQUIREMENTS.md
+wiki/
+DEPLOY.md
 
-# OS
-.DS_Store
-Thumbs.db
-
-# Build
-/dist/
-/build/
-
-# Logs
+# Logs and Executables
 *.log
-
-# Binary installers
-*.deb
-*.rpm
+*.exe

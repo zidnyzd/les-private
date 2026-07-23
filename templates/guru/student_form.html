@@ -1,0 +1,100 @@
+{{define "content"}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/students" class="text-decoration-none text-muted me-2"><i class="ti ti-arrow-left"></i></a>
+    <h1 class="fs-4 fw-semibold mb-0">
+        {{if .EditMode}}Edit Siswa{{else}}Tambah Siswa{{end}}
+    </h1>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:500px">
+    <div class="card-body p-4">
+        <form method="POST" action="/students/{{if .EditMode}}edit?id={{.Student.ID}}{{else}}new{{end}}">
+            <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Nama Siswa <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" required value="{{.Student.Name}}" placeholder="Nama lengkap">
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-4">
+                    <label class="form-label small fw-medium">Usia</label>
+                    <input type="number" name="age" class="form-control" value="{{.Student.Age}}" min="0" max="20" placeholder="th">
+                </div>
+                <div class="col-8">
+                    <label class="form-label small fw-medium">Kelas</label>
+                    <input type="text" name="grade" class="form-control" value="{{.Student.Grade}}" placeholder="Contoh: TK B, 1 SD">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Lokasi Rumah</label>
+                <input type="text" name="address" class="form-control" value="{{.Student.Address}}" placeholder="Alamat / daerah">
+            </div>
+
+            <!-- Orang Tua Section -->
+            <div class="mb-4">
+                <label class="form-label small fw-medium">Orang Tua</label>
+
+                {{if .EditMode}}
+                <!-- Current parent info -->
+                {{if .Student.ParentID}}
+                <div class="alert alert-info py-2 small mb-2">
+                    <i class="ti ti-user me-1"></i>Orang tua saat ini: <strong>{{.Student.ParentName}}</strong>
+                </div>
+                {{else}}
+                <div class="alert alert-warning py-2 small mb-2">
+                    <i class="ti ti-alert-triangle me-1"></i>Belum ada orang tua terhubung
+                </div>
+                {{end}}
+                {{end}}
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="parent_mode" id="mode_existing" value="existing" checked onchange="toggleParentMode()">
+                    <label class="form-check-label small" for="mode_existing">
+                        {{if .EditMode}}Tetap / ganti ke akun yang sudah ada{{else}}Link ke akun yang sudah ada{{end}}
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="parent_mode" id="mode_new" value="new" onchange="toggleParentMode()">
+                    <label class="form-check-label small" for="mode_new">Buat akun ortu baru</label>
+                </div>
+
+                <!-- Existing account -->
+                <div id="existing_section" class="mt-2">
+                    <input type="text" name="parent_username" class="form-control" placeholder="Username akun ortu" {{if .EditMode}}{{if .Student.ParentID}}value="{{.Student.ParentName}}"{{end}}{{end}}>
+                    <div class="form-text">Ketik username akun orang tua yang sudah terdaftar</div>
+                </div>
+
+                <!-- New account -->
+                <div id="new_section" class="mt-2" style="display:none">
+                    <div class="mb-2">
+                        <input type="text" name="parent_new_username" class="form-control" placeholder="Username ortu (3-20 karakter)">
+                    </div>
+                    <div class="mb-2">
+                        <input type="text" name="parent_new_display" class="form-control" placeholder="Nama tampilan ortu">
+                    </div>
+                    <div class="mb-2">
+                        <input type="password" name="parent_new_password" class="form-control" placeholder="Password ortu (min 6 karakter)">
+                    </div>
+                    <div class="form-text">Ortu bisa login & mengubah password nanti</div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i> Simpan</button>
+                <a href="/students" class="btn btn-outline-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleParentMode(){
+    var mode=document.querySelector('input[name="parent_mode"]:checked').value;
+    document.getElementById('existing_section').style.display=mode==='existing'?'block':'none';
+    document.getElementById('new_section').style.display=mode==='new'?'block':'none';
+}
+</script>
+{{end}}

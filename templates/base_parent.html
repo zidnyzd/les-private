@@ -1,0 +1,138 @@
+{{define "base-parent"}}<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{if eq .Page "Beranda"}}Beranda - Les Private
+{{- else if eq .Page "Laporan"}}Laporan - Les Private
+{{- else if eq .Page "profile"}}Profil - Les Private
+{{- else}}Les Private{{end}}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.35.0/dist/tabler-icons.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f5f6fa; }
+        .sidebar { width: 260px; min-height: 100vh; background: #fff; border-right: 1px solid #e8ecf1; position: fixed; top: 0; left: 0; z-index: 100; padding: 0; overflow-y: auto; transition: left .25s ease; }
+        .logo-area { padding: 1.25rem 1.5rem; border-bottom: 1px solid #e8ecf1; }
+        .logo-text { font-size: 1.15rem; font-weight: 700; color: #2c7be5; letter-spacing: -.02em; }
+        .nav-text { font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: #b0b7c0; font-weight: 600; }
+        .sidebar .nav { padding: 0; }
+        .sidebar .nav-link { display: flex; align-items: center; gap: .75rem; padding: .55rem 1.5rem; color: #5e6870; font-size: .875rem; text-decoration: none; transition: all .15s; border-radius: 0; }
+        .sidebar .nav-link:hover { background: #f0f4f8; color: #2c7be5; }
+        .sidebar .nav-link.active { background: #eef4ff; color: #2c7be5; font-weight: 600; border-right: 3px solid #2c7be5; }
+        .sidebar .nav-link i { font-size: 1.1rem; width: 1.25rem; text-align: center; }
+        .main-wrap { margin-left: 260px; min-height: 100vh; }
+        .topbar { background: #fff; min-height: 56px; border-bottom: 1px solid #e8ecf1; display: flex; align-items: center; justify-content: space-between; padding: 0 1.5rem; position: sticky; top: 0; z-index: 99; }
+        .content { padding: 1.75rem; }
+        .sidebar-toggle { display: none; cursor: pointer; background: none; border: none; padding: .25rem; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; background: #e8ecf1; display: inline-flex; align-items: center; justify-content: center; color: #5e6870; font-weight: 600; font-size: .85rem; }
+        @media (max-width: 768px) {
+            .sidebar { left: -260px; }
+            .sidebar.show { left: 0; }
+            .main-wrap { margin-left: 0; }
+            .topbar { padding: 0 .75rem; }
+            .content { padding: .75rem .75rem 72px; }
+            .sidebar-toggle { display: inline-flex; }
+        }
+        .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 99; background: #fff; border-top: 1px solid #e8ecf1; padding: 0; }
+        .bottom-nav a { display: flex; flex-direction: column; align-items: center; padding: .4rem 0 .2rem; color: #8b95a5; text-decoration: none; font-size: .65rem; transition: color .15s; flex: 1; }
+        .bottom-nav a i { font-size: 1.35rem; margin-bottom: .1rem; }
+        .bottom-nav a.active { color: #2c7be5; font-weight: 600; }
+        @media (max-width: 768px) { .bottom-nav { display: flex; } }
+        [data-bs-theme="dark"] body { background: #16181b; }
+        [data-bs-theme="dark"] .sidebar { background: #1e2024; border-color: #2c3035; }
+        [data-bs-theme="dark"] .sidebar .nav-link { color: #abb2bf; }
+        [data-bs-theme="dark"] .sidebar .nav-link:hover { background: #2c3035; color: #6ea8fe; }
+        [data-bs-theme="dark"] .sidebar .nav-link.active { background: #1a2d44; color: #6ea8fe; border-color: #6ea8fe; }
+        [data-bs-theme="dark"] .logo-area { border-color: #2c3035; }
+        [data-bs-theme="dark"] .topbar { background: #1e2024; border-color: #2c3035; color: #f8f9fa; }
+        [data-bs-theme="dark"] .card, [data-bs-theme="dark"] .card-header { background: #1e2024; }
+        [data-bs-theme="dark"] .table { color: #cfd4da; --bs-table-color: #cfd4da; }
+        [data-bs-theme="dark"] .table-light { --bs-table-bg: #262a2e; --bs-table-color: #cfd4da; }
+        [data-bs-theme="dark"] .table-hover tbody tr:hover { --bs-table-hover-bg: #2c3035; }
+        [data-bs-theme="dark"] .text-muted { color: #8b95a5 !important; }
+        [data-bs-theme="dark"] .form-control, [data-bs-theme="dark"] .form-select, [data-bs-theme="dark"] .input-group-text { background: #262a2e; border-color: #2c3035; color: #cfd4da; }
+        [data-bs-theme="dark"] .form-control:focus, [data-bs-theme="dark"] .form-select:focus { background: #2c3035; border-color: #6ea8fe; color: #f8f9fa; }
+        [data-bs-theme="dark"] .form-label { color: #abb2bf; }
+        [data-bs-theme="dark"] .btn-light { background: #2c3035; border-color: #3a3f45; color: #cfd4da; }
+        [data-bs-theme="dark"] .btn-outline-secondary { color: #abb2bf; border-color: #3a3f45; }
+        [data-bs-theme="dark"] .card-header { background: #1e2024; border-color: #2c3035; }
+        [data-bs-theme="dark"] .bg-white { background-color: #1e2024 !important; }
+        [data-bs-theme="dark"] .bottom-nav { background: #1e2024; border-color: #2c3035; }
+        [data-bs-theme="dark"] .bottom-nav a { color: #8b95a5; }
+        [data-bs-theme="dark"] .bottom-nav a.active { color: #6ea8fe; }
+    </style>
+</head>
+<body>
+    <div id="overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:99" onclick="closeSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+        <div class="logo-area"><span class="logo-text">📚 Les Private</span></div>
+        <ul class="nav flex-column">
+            <li class="px-4 py-2"><small class="nav-text">Menu</small></li>
+            <li><a class="nav-link {{if eq .Page "Beranda"}}active{{end}}" href="/parent" onclick="closeSidebar()"><i class="ti ti-home"></i><span>Beranda</span></a></li>
+            <li><a class="nav-link {{if eq .Page "Laporan"}}active{{end}}" href="/parent/report" onclick="closeSidebar()"><i class="ti ti-file-report"></i><span>Laporan</span></a></li>
+            <li class="px-4 pt-4 pb-2"><small class="nav-text">Lainnya</small></li>
+            <li><a class="nav-link {{if eq .Page "profile"}}active{{end}}" href="/parent/profile" onclick="closeSidebar()"><i class="ti ti-user"></i><span>Profil</span></a></li>
+        </ul>
+    </aside>
+
+    <!-- Main -->
+    <div class="main-wrap" id="mainWrap">
+        <div class="topbar">
+            <div class="d-flex align-items-center gap-2">
+                <button class="sidebar-toggle" onclick="toggleSidebar()"><i class="ti ti-menu-2" style="font-size:1.3rem;color:#5e6870"></i></button>
+                <span class="fw-bold d-sm-none" style="color:#2c7be5">Les Private</span>
+                <span class="fw-semibold d-none d-sm-inline" style="font-size:.9rem">
+                    {{if eq .Page "Beranda"}}Beranda
+                    {{- else if eq .Page "Laporan"}}Laporan
+                    {{- else if eq .Page "profile"}}Profil
+                    {{- else}}{{.Page}}{{end}}
+                </span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span style="font-size:.85rem;color:#5e6870" class="d-none d-sm-inline">{{.UserName}}</span>
+                <button onclick="toggleTheme()" class="btn btn-light btn-sm rounded-circle d-flex align-items-center justify-content-center" style="width:34px;height:34px;border:1px solid #e8ecf1;padding:0"><i class="ti ti-moon" style="font-size:.9rem"></i></button>
+                <div class="dropdown">
+                    <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="avatar">{{slice .UserName 0 1}}</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end p-0" style="min-width:200px">
+                        <div class="d-flex gap-3 align-items-center px-3 py-3 border-bottom">
+                            <span class="avatar" style="width:42px;height:42px;font-size:1rem">{{slice .UserName 0 1}}</span>
+                            <div>
+                                <div class="fw-semibold small">{{.UserName}}</div>
+                                <div class="text-muted small">Orang Tua</div>
+                            </div>
+                        </div>
+                        <div class="p-2">
+                            <a href="/parent/profile" class="dropdown-item small py-2 rounded"><i class="ti ti-user me-2"></i> Profil</a>
+                            <a href="/logout" class="dropdown-item small py-2 rounded text-danger"><i class="ti ti-logout me-2"></i> Keluar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            {{template "content" .}}
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav">
+        <a href="/parent" class="{{if eq .Page "Beranda"}}active{{end}}"><i class="ti ti-home"></i> Beranda</a>
+        <a href="/parent/report" class="{{if eq .Page "Laporan"}}active{{end}}"><i class="ti ti-file-report"></i> Laporan</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar(){var s=document.getElementById('sidebar');var o=document.getElementById('overlay');if(s.classList.contains('show')){s.classList.remove('show');o.style.display='none';}else{s.classList.add('show');o.style.display='block';}}
+        function closeSidebar(){var s=document.getElementById('sidebar');var o=document.getElementById('overlay');s.classList.remove('show');o.style.display='none';}
+        function toggleTheme(){var h=document.documentElement;var t=h.getAttribute('data-bs-theme')==='dark'?'light':'dark';h.setAttribute('data-bs-theme',t);localStorage.setItem('bsTheme',t);}
+        (function(){var t=localStorage.getItem('bsTheme');if(t)document.documentElement.setAttribute('data-bs-theme',t);else if(window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-bs-theme','dark');})();
+        document.addEventListener('click',function(e){var s=document.getElementById('sidebar');if(s&&s.classList.contains('show')&&!s.contains(e.target)&&!e.target.closest('.sidebar-toggle')){closeSidebar();}});
+    </script>
+</body>
+</html>
+{{end}}

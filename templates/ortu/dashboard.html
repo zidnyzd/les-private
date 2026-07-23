@@ -1,0 +1,67 @@
+{{define "content"}}
+{{if .StudentName}}
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <div class="rounded-circle bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center" style="width:48px;height:48px;font-size:1.2rem;font-weight:700">
+                {{slice .StudentName 0 1}}
+            </div>
+            <div>
+                <h5 class="fw-semibold mb-0">{{.StudentName}}</h5>
+                <small class="text-muted">{{if .StudentAge}}{{.StudentAge}} tahun{{end}}{{if .StudentGrade}} · {{.StudentGrade}}{{end}}</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header border-0 py-3">
+        <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-history me-2 text-primary"></i>Riwayat Pertemuan</h5>
+    </div>
+    <div class="card-body p-0">
+        {{if .Meetings}}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
+                        <th>Tema</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Meetings}}
+                    <tr>
+                        <td class="fw-medium">{{.Date}}</td>
+                        <td><small>{{.StartTime}} - {{.EndTime}}</small></td>
+                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td class="text-center">
+                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning">Terjadwal</span>{{end}}
+                            {{if eq .Status "selesai"}}<span class="badge bg-success">Selesai</span>{{end}}
+                            {{if eq .Status "batal"}}<span class="badge bg-danger">Batal</span>{{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <div class="text-center py-5">
+            <i class="ti ti-calendar text-muted" style="font-size:3rem"></i>
+            <h5 class="mt-3 text-muted">Belum ada riwayat pertemuan</h5>
+            <p class="text-muted small">Pertemuan akan muncul setelah guru membuat jadwal.</p>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{else}}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="ti ti-info-circle text-muted" style="font-size:3rem"></i>
+        <h5 class="mt-3 text-muted">Belum ada siswa terhubung</h5>
+        <p class="text-muted small">Hubungi guru untuk menghubungkan akun Anda dengan data siswa.</p>
+    </div>
+</div>
+{{end}}
+{{end}}

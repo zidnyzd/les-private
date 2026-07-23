@@ -1,0 +1,67 @@
+{{define "content"}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/meetings" class="text-decoration-none text-muted me-2"><i class="ti ti-arrow-left"></i></a>
+    <h1 class="fs-4 fw-semibold mb-0">
+        {{if .EditMode}}Edit Pertemuan{{else}}Pertemuan Baru{{end}}
+    </h1>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:500px">
+    <div class="card-body p-4">
+        <form method="POST" action="/meetings/{{if .EditMode}}edit?id={{.Meeting.ID}}{{else}}new{{end}}">
+            <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Siswa <span class="text-danger">*</span></label>
+                <select name="student_id" class="form-select" required>
+                    <option value="">Pilih siswa...</option>
+                    {{range .Students}}
+                    <option value="{{.ID}}" {{if eq .ID $.Meeting.StudentID}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Tanggal <span class="text-danger">*</span></label>
+                <input type="date" name="date" class="form-control" required value="{{.Meeting.Date}}">
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small fw-medium">Mulai <span class="text-danger">*</span></label>
+                    <input type="time" name="start_time" class="form-control" required value="{{.Meeting.StartTime}}">
+                </div>
+                <div class="col-6">
+                    <label class="form-label small fw-medium">Selesai <span class="text-danger">*</span></label>
+                    <input type="time" name="end_time" class="form-control" required value="{{.Meeting.EndTime}}">
+                </div>
+            </div>
+            {{if .EditMode}}
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Tema Belajar</label>
+                <input type="text" name="topic" class="form-control" value="{{.Meeting.Topic}}" placeholder="Contoh: Membaca suku kata">
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Catatan</label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="Catatan tambahan...">{{.Meeting.Notes}}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Status</label>
+                <select name="status" class="form-select">
+                    <option value="terjadwal" {{if eq .Meeting.Status "terjadwal"}}selected{{end}}>📅 Terjadwal</option>
+                    <option value="selesai" {{if eq .Meeting.Status "selesai"}}selected{{end}}>✅ Selesai</option>
+                    <option value="batal" {{if eq .Meeting.Status "batal"}}selected{{end}}>❌ Batal</option>
+                </select>
+            </div>
+            {{else}}
+            <div class="form-text mb-3">Tema belajar & catatan bisa diisi setelah pertemuan dibuat.</div>
+            {{end}}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i> Simpan</button>
+                <a href="/meetings" class="btn btn-outline-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{{end}}

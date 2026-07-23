@@ -1,0 +1,142 @@
+{{define "content"}}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fs-4 fw-semibold mb-0"><i class="ti ti-file-report me-2 text-primary"></i>Laporan {{.Student.Name}}</h1>
+    <a href="/reports" class="btn btn-outline-secondary btn-sm"><i class="ti ti-arrow-left"></i> Kembali</a>
+</div>
+
+<!-- Student info card -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3"><span class="text-muted small">Nama</span><div class="fw-medium">{{.Student.Name}}</div></div>
+            <div class="col-md-2"><span class="text-muted small">Usia</span><div class="fw-medium">{{if .Student.Age}}{{.Student.Age}} th{{end}}</div></div>
+            <div class="col-md-2"><span class="text-muted small">Kelas</span><div class="fw-medium">{{.Student.Grade}}</div></div>
+            <div class="col-md-3"><span class="text-muted small">Lokasi</span><div class="fw-medium">{{.Student.Address}}</div></div>
+            <div class="col-md-2"><span class="text-muted small">Total Pertemuan</span><div class="fw-medium">{{len .Meetings}}</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- Month selector -->
+<div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="/reports/student?id={{.Student.ID}}&month={{.PrevMonth}}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-chevron-left"></i></a>
+    <div class="fw-semibold align-self-center">{{.Month}}</div>
+    <a href="/reports/student?id={{.Student.ID}}&month={{.NextMonth}}" class="btn btn-outline-secondary btn-sm"><i class="ti ti-chevron-right"></i></a>
+    <span class="mx-2 border-start"></span>
+    <a href="/reports/pdf?id={{.Student.ID}}&month={{.Month}}" class="btn btn-outline-danger btn-sm" target="_blank"><i class="ti ti-file-text"></i> PDF</a>
+    <a href="/reports/docx?id={{.Student.ID}}&month={{.Month}}" class="btn btn-outline-primary btn-sm" target="_blank"><i class="ti ti-file-word"></i> Word</a>
+</div>
+
+{{if .HasData}}
+<!-- Chart -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header border-0 py-3">
+        <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-trending-up me-2 text-success"></i>Aspek yang Paling Menonjol</h5>
+        <small class="text-muted">Jumlah penilaian "Berkembang Sangat Baik" per aspek bulan ini</small>
+    </div>
+    <div class="card-body">
+        <div id="chart"></div>
+    </div>
+</div>
+
+<!-- Assessment matrix -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header border-0 py-3">
+        <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-table me-2 text-primary"></i>Matriks Penilaian</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th style="min-width:100px">Tanggal</th>
+                        <th>Tema</th>
+                        {{range $i, $a := $.Summary}}
+                        <th style="min-width:90px;text-align:center">{{$a.Label}}</th>
+                        {{end}}
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range $m := .Matrix}}
+                    <tr>
+                        <td class="fw-medium">{{$m.Date}}</td>
+                        <td>{{if $m.Topic}}{{$m.Topic}}{{else}}-{{end}}</td>
+                        {{range $item := $m.Items}}
+                            <td class="text-center" style="font-size:0.75rem{{if eq $item.Score "Belum Berkembang"}};background:#f8d7da{{else if eq $item.Score "Mulai Berkembang"}};background:#fff3cd{{else if eq $item.Score "Berkembang Sesuai Harapan"}};background:#d1ecf1{{else if eq $item.Score "Berkembang Sangat Baik"}};background:#d4edda{{end}}">
+                                {{if $item.Score}}
+                                    {{if eq $item.Score "Belum Berkembang"}}BB{{else if eq $item.Score "Mulai Berkembang"}}MB{{else if eq $item.Score "Berkembang Sesuai Harapan"}}BSH{{else}}BSB{{end}}
+                                {{else}}
+                                    -
+                                {{end}}
+                            </td>
+                        {{end}}
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Summary -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header border-0 py-3">
+        <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-summary me-2 text-info"></i>Rekapitulasi</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                        <th>Aspek</th>
+                        <th class="text-center">BB</th>
+                        <th class="text-center">MB</th>
+                        <th class="text-center">BSH</th>
+                        <th class="text-center">BSB</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">% BSB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Summary}}
+                    <tr>
+                        <td class="fw-medium">{{.Label}}</td>
+                        <td class="text-center">{{.BB}}</td>
+                        <td class="text-center">{{.MB}}</td>
+                        <td class="text-center">{{.BSH}}</td>
+                        <td class="text-center">{{.BSB}}</td>
+                        <td class="text-center">{{.Total}}</td>
+                        <td class="text-center">{{printf "%.0f" .BSBPct}}%</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var options = {
+        chart: { type: 'bar', height: 300, toolbar: { show: false } },
+        series: [{ name: 'Berkembang Sangat Baik (BSB)', data: {{.ChartSeries}} }],
+        xaxis: { categories: {{.ChartLabels}}, labels: { style: { fontSize: '12px' } } },
+        colors: ['#22c55e'],
+        plotOptions: { bar: { borderRadius: 6, columnWidth: '60%' } },
+        dataLabels: { enabled: true }
+    };
+    new ApexCharts(document.querySelector('#chart'), options).render();
+});
+</script>
+{{else}}
+<div class="card border-0 shadow-sm">
+    <div class="card-body text-center py-5">
+        <i class="ti ti-info-circle text-muted" style="font-size:3rem"></i>
+        <h5 class="mt-3 text-muted">Belum ada data penilaian</h5>
+        <p class="text-muted small">Belum ada pertemuan selesai dengan penilaian pada bulan {{.Month}}.</p>
+        <a href="/meetings" class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Buat Pertemuan</a>
+    </div>
+</div>
+{{end}}
+{{end}}

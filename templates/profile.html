@@ -1,0 +1,69 @@
+{{define "content"}}
+{{if .Success}}
+<div class="alert alert-success py-2 small mb-3"><i class="ti ti-check me-1"></i>{{.Success}}</div>
+{{end}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<div class="mb-4">
+    <h1 class="fs-4 fw-semibold mb-0"><i class="ti ti-user me-2 text-primary"></i>Profil</h1>
+</div>
+
+<div class="row g-4">
+    <!-- Info -->
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-4">
+                <div class="rounded-circle bg-primary bg-opacity-10 text-primary mx-auto mb-3 d-flex align-items-center justify-content-center" style="width:64px;height:64px;font-size:1.5rem;font-weight:700">
+                    {{slice .User.DisplayName 0 1}}
+                </div>
+                <h5 class="fw-semibold mb-1">{{.User.DisplayName}}</h5>
+                <span class="badge bg-secondary">{{.User.Role}}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit name -->
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h6 class="fw-semibold mb-3"><i class="ti ti-edit me-2 text-primary"></i>Ubah Nama Tampilan</h6>
+                <form method="POST" action="/profile">
+                    <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+                    <input type="hidden" name="action" value="name">
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Nama Tampilan</label>
+                        <input type="text" name="display" class="form-control" value="{{.User.DisplayName}}" required maxlength="50">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="ti ti-check"></i> Simpan</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change password -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <h6 class="fw-semibold mb-3"><i class="ti ti-lock me-2 text-warning"></i>Ubah Kata Sandi</h6>
+                <form method="POST" action="/profile">
+                    <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+                    <input type="hidden" name="action" value="password">
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Kata Sandi Lama</label>
+                        <input type="password" name="old_password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Kata Sandi Baru</label>
+                        <input type="password" name="new_password" class="form-control" required minlength="6" maxlength="72">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Konfirmasi Sandi Baru</label>
+                        <input type="password" name="confirm_password" class="form-control" required minlength="6" maxlength="72">
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm"><i class="ti ti-lock"></i> Ubah Sandi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}

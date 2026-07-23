@@ -1,0 +1,95 @@
+{{define "content"}}
+{{if .Success}}
+<div class="alert alert-success py-2 small mb-3"><i class="ti ti-check me-1"></i>{{.Success}}</div>
+{{end}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="fs-4 fw-semibold mb-0"><i class="ti ti-calendar me-2 text-primary"></i>Pertemuan</h1>
+    <a href="/meetings/new" class="btn btn-primary btn-sm"><i class="ti ti-plus me-1"></i> Baru</a>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2 px-3">
+        <form method="GET" action="/meetings" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Siswa</label>
+                <select name="student" class="form-select form-select-sm">
+                    <option value="">Semua Siswa</option>
+                    {{range .Students}}
+                    <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.FilterStudent}}selected{{end}}>{{.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Tanggal</label>
+                <input type="date" name="date" class="form-control form-control-sm" value="{{.FilterDate}}">
+            </div>
+            <div class="col-md-4 d-flex gap-1">
+                <button type="submit" class="btn btn-outline-primary btn-sm"><i class="ti ti-filter me-1"></i>Filter</button>
+                <a href="/meetings" class="btn btn-outline-secondary btn-sm"><i class="ti ti-x"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Meeting list -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        {{if .Meetings}}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
+                        <th>Siswa</th>
+                        <th>Tema</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center" style="width:100px">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Meetings}}
+                    <tr>
+                        <td class="fw-medium">{{.Date}}</td>
+                        <td><small>{{.StartTime}} - {{.EndTime}}</small></td>
+                        <td>{{.StudentName}}</td>
+                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted">-</span>{{end}}</td>
+                        <td class="text-center">
+                            {{if eq .Status "terjadwal"}}<span class="badge bg-warning">Terjadwal</span>{{end}}
+                            {{if eq .Status "selesai"}}<span class="badge bg-success">Selesai</span>{{end}}
+                            {{if eq .Status "batal"}}<span class="badge bg-danger">Batal</span>{{end}}
+                        </td>
+                        <td class="text-center">
+                            <a href="/meetings/detail?id={{.ID}}" class="text-decoration-none text-warning me-1" title="Nilai"><i class="ti ti-star"></i></a>
+                            <a href="/meetings/edit?id={{.ID}}" class="text-decoration-none text-muted me-1" title="Edit"><i class="ti ti-pencil"></i></a>
+                            <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="text-decoration-none text-danger" title="Hapus"><i class="ti ti-trash"></i></a>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+        {{else}}
+        <div class="text-center py-5">
+            <i class="ti ti-calendar text-muted" style="font-size:3rem"></i>
+            <h5 class="mt-3 text-muted">Belum ada pertemuan</h5>
+            <p class="text-muted small mb-3">Buat pertemuan baru untuk mulai mencatat jadwal les.</p>
+            <a href="/meetings/new" class="btn btn-primary btn-sm"><i class="ti ti-plus me-1"></i> Buat Pertemuan</a>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<script>
+function hapus(id, date) {
+    if (confirm('Hapus pertemuan tanggal ' + date + '?\nSemua penilaian juga akan terhapus.')) {
+        window.location = '/meetings/delete?id=' + id;
+    }
+}
+</script>
+{{end}}
