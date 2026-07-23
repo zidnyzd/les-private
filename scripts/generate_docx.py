@@ -281,7 +281,7 @@ def main():
 
     # === KETERANGAN STIMULASI ===
     add_para(doc, '', space_after=3)
-    add_para(doc, 'Keterangan Stimulasi', size=12, align='center', space_before=6, space_after=3)
+    add_para(doc, 'Keterangan Stimulasi', size=12, align='center', space_before=6, space_after=3, bold=True)
 
     keterangan = [
         ('Membaca', 'Kegiatan pengenalan huruf atau belajar teknis membaca (suku kata, kata, frasa, kalimat)'),
@@ -291,12 +291,49 @@ def main():
         ('Sensory play', 'Kegiatan untuk menstimulasi koordinasi mata dengan tangan, panca indera, melatih fokus dan konsentrasi'),
         ('Kreativitas', 'Kegiatan untuk mengembangkan imajinasi dan keterampilan seni'),
     ]
-    for label, desc in keterangan:
-        add_para(doc, label, size=12, space_after=0)
-        add_para(doc, desc, size=12, space_after=3)
+
+    table_ket = doc.add_table(rows=1 + len(keterangan), cols=2)
+    table_ket.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(table_ket)
+    
+    headers_ket = ['Aspek', 'Kegiatan / Keterangan']
+    widths_ket = [2000, 7548]
+    
+    for i, h in enumerate(headers_ket):
+        cell = table_ket.rows[0].cells[i]
+        cell.text = ''
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(h)
+        run.font.size = Pt(10)
+        run.font.name = 'Times New Roman'
+        run.bold = True
+        set_cell_shading(cell, header_color)
+        set_cell_width_twips(cell, widths_ket[i])
+
+    for row_idx, (label, desc) in enumerate(keterangan):
+        row = table_ket.rows[row_idx + 1]
+        
+        # Label Aspek
+        cell = row.cells[0]
+        p = cell.paragraphs[0]
+        run = p.add_run(label)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        run.bold = True
+        set_cell_width_twips(cell, widths_ket[0])
+        
+        # Deskripsi
+        cell = row.cells[1]
+        p = cell.paragraphs[0]
+        run = p.add_run(desc)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        set_cell_width_twips(cell, widths_ket[1])
 
     # === KETERANGAN SKALA ===
-    add_para(doc, 'Keterangan Stimulasi', size=12, align='center', space_before=6, space_after=3)
+    add_para(doc, '', space_after=6)
+    add_para(doc, 'Keterangan Skala Penilaian', size=12, align='center', space_before=6, space_after=3, bold=True)
 
     skala = [
         ('1', 'Belum Berkembang (BB)', 'Belum ingin berkegiatan'),
@@ -304,14 +341,60 @@ def main():
         ('3', 'Berkembang Sesuai Harapan (BSH)', 'Mampu berkegiatan dan terstimulasi dengan baik'),
         ('4', 'Berkembang Sangat Baik (BSB)', 'Mahir berkegiatan dan terstimulasi dengan sangat baik'),
     ]
-    for num, label, desc in skala:
-        add_para(doc, num, size=12, space_after=0)
-        add_para(doc, label, size=12, space_after=0)
-        add_para(doc, desc, size=12, space_after=3)
+
+    table_skala = doc.add_table(rows=1 + len(skala), cols=3)
+    table_skala.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(table_skala)
+    
+    headers_skala = ['Skala', 'Predikat', 'Keterangan']
+    widths_skala = [1000, 3500, 5048]
+    
+    for i, h in enumerate(headers_skala):
+        cell = table_skala.rows[0].cells[i]
+        cell.text = ''
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(h)
+        run.font.size = Pt(10)
+        run.font.name = 'Times New Roman'
+        run.bold = True
+        set_cell_shading(cell, header_color)
+        set_cell_width_twips(cell, widths_skala[i])
+
+    for row_idx, (num, label, desc) in enumerate(skala):
+        row = table_skala.rows[row_idx + 1]
+        
+        # Num
+        cell = row.cells[0]
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(num)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        set_cell_width_twips(cell, widths_skala[0])
+        
+        # Label
+        cell = row.cells[1]
+        p = cell.paragraphs[0]
+        run = p.add_run(label)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        run.bold = True
+        set_cell_width_twips(cell, widths_skala[1])
+        
+        # Desc
+        cell = row.cells[2]
+        p = cell.paragraphs[0]
+        run = p.add_run(desc)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        set_cell_width_twips(cell, widths_skala[2])
 
     # === KESIMPULAN STIMULASI ===
-    add_para(doc, 'Kesimpulan Stimulasi', size=12, align='center', space_before=6, space_after=3)
+    add_para(doc, '', space_after=6)
+    add_para(doc, 'Kesimpulan Stimulasi', size=12, align='center', space_before=6, space_after=3, bold=True)
 
+    kesimpulan_rows = []
     for idx, (ak, al) in enumerate(zip(aspect_keys, aspect_labels)):
         s = summary[ak]
         if s['Total'] == 0:
@@ -324,7 +407,6 @@ def main():
         ]
         dominant = max(levels, key=lambda x: x[1])
 
-        # Formulate rich narrative based on entries
         kegs = s['kegiatan_list']
         if len(kegs) > 1:
             keg_narrative = ", ".join(kegs[:-1]) + ", dan " + kegs[-1]
@@ -343,8 +425,47 @@ def main():
         else: # Berkembang Sangat Baik
             prog_narrative = "sangat mahir dalam berkegiatan, menunjukkan antusiasme yang tinggi, dan terstimulasi dengan sangat maksimal."
 
-        final_text = f"{idx+1}. Dalam kegiatan {al}, {student['name']} telah belajar dan mempraktikkan: {keg_narrative}. Secara keseluruhan, {student['name']} {prog_narrative} Maka kemampuan {student['name']} dalam kegiatan {al} dinyatakan {status_text}."
-        add_para(doc, final_text, size=11, space_after=4)
+        final_text = f"Dalam kegiatan {al}, {student['name']} telah belajar dan mempraktikkan: {keg_narrative}. Secara keseluruhan, {student['name']} {prog_narrative} Maka kemampuan {student['name']} dalam kegiatan {al} dinyatakan {status_text}."
+        kesimpulan_rows.append(final_text)
+
+    table_kes = doc.add_table(rows=1 + len(kesimpulan_rows), cols=2)
+    table_kes.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_borders(table_kes)
+    
+    widths_kes = [1000, 8548]
+    headers_kes = ['No', 'Kesimpulan Perkembangan']
+    
+    for i, h in enumerate(headers_kes):
+        cell = table_kes.rows[0].cells[i]
+        cell.text = ''
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(h)
+        run.font.size = Pt(10)
+        run.font.name = 'Times New Roman'
+        run.bold = True
+        set_cell_shading(cell, header_color)
+        set_cell_width_twips(cell, widths_kes[i])
+
+    for row_idx, text in enumerate(kesimpulan_rows):
+        row = table_kes.rows[row_idx + 1]
+        
+        # No
+        cell = row.cells[0]
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(str(row_idx + 1))
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        set_cell_width_twips(cell, widths_kes[0])
+        
+        # Kesimpulan Text
+        cell = row.cells[1]
+        p = cell.paragraphs[0]
+        run = p.add_run(text)
+        run.font.name = 'Times New Roman'
+        run.font.size = Pt(10)
+        set_cell_width_twips(cell, widths_kes[1])
 
     # === TANDA TANGAN ===
     today = datetime.now()
