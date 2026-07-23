@@ -1,0 +1,228 @@
+{{define "content"}}
+{{if .Success}}
+<div class="alert alert-success py-2 small mb-3"><i class="ti ti-check me-1"></i>{{.Success}}</div>
+{{end}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<style>
+    /* Table & Card styles */
+    .table-custom tbody tr {
+        transition: background-color 0.15s ease-in-out;
+    }
+    .table-custom th {
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #8b95a5;
+        border-bottom-width: 1px;
+    }
+    .mobile-parent-card {
+        background: var(--bs-card-bg, #fff);
+        border: 1px solid var(--bs-border-color, #e8ecf1);
+        border-radius: 12px;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .mobile-parent-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    [data-bs-theme="dark"] .mobile-parent-card {
+        background: #1e293b;
+        border-color: #334155;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="fs-4 fw-semibold mb-0"><i class="ti ti-users-group me-2 text-primary"></i>Data Orang Tua</h1>
+    <a href="/students/new" class="btn btn-primary btn-sm rounded-2 px-3"><i class="ti ti-plus me-1"></i> Tambah Siswa / Ortu</a>
+</div>
+
+<!-- Search Bar -->
+<div class="card border-0 shadow-sm rounded-3 mb-3">
+    <div class="card-body py-2.5 px-3">
+        <form method="GET" action="/parents" class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="ti ti-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0" placeholder="Cari nama wali, username, atau nama anak..." value="{{.Search}}">
+                    {{if .Search}}
+                    <a href="/parents" class="btn btn-outline-secondary"><i class="ti ti-x"></i></a>
+                    {{end}}
+                    <button type="submit" class="btn btn-primary px-3">Cari</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Parents List -->
+<div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+    <div class="card-body p-0">
+        {{if .Parents}}
+
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-custom table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Nama Tampilan Wali</th>
+                        <th>Username Login</th>
+                        <th>Anak Terhubung</th>
+                        <th class="text-center pe-4" style="width:160px">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .Parents}}
+                    <tr>
+                        <td class="ps-4 fw-semibold text-body">
+                            <i class="ti ti-user me-2 text-primary"></i>{{.DisplayName}}
+                        </td>
+                        <td class="text-muted"><code class="text-body fw-medium">@{{.Username}}</code></td>
+                        <td>
+                            {{if gt .ChildrenCount 0}}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1 me-1">
+                                {{.ChildrenCount}} Anak
+                            </span>
+                            <span class="text-body small">{{.ChildrenNames}}</span>
+                            {{else}}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1">
+                                Belum Terhubung
+                            </span>
+                            {{end}}
+                        </td>
+                        <td class="text-center pe-4">
+                            <button type="button" class="btn btn-sm btn-outline-warning rounded-2 py-1 px-2" 
+                                    onclick="openResetModal('{{.ID}}', '{{.DisplayName}}', '{{.Username}}')" title="Reset Password">
+                                <i class="ti ti-key me-1"></i>Reset Pass
+                            </button>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Mobile Card View -->
+        <div class="d-md-none d-block p-3">
+            <div class="row g-3">
+                {{range .Parents}}
+                <div class="col-12">
+                    <div class="mobile-parent-card p-3 shadow-sm">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="fw-bold text-body fs-6 mb-0">{{.DisplayName}}</div>
+                                <div class="text-muted small"><i class="ti ti-at me-0.5"></i>{{.Username}}</div>
+                            </div>
+                            <div>
+                                {{if gt .ChildrenCount 0}}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+                                    {{.ChildrenCount}} Anak
+                                </span>
+                                {{else}}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-1" style="font-size: 0.7rem;">
+                                    Belum Terhubung
+                                </span>
+                                {{end}}
+                            </div>
+                        </div>
+
+                        <div class="bg-body-tertiary rounded-2 p-2 mb-3 small">
+                            <span class="text-muted me-1">Anak:</span>
+                            <span class="fw-medium text-body">{{if .ChildrenNames}}{{.ChildrenNames}}{{else}}<span class="text-muted fst-italic">Belum ada anak terhubung</span>{{end}}</span>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-warning w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center gap-1"
+                                onclick="openResetModal('{{.ID}}', '{{.DisplayName}}', '{{.Username}}')">
+                            <i class="ti ti-key"></i> Reset Password
+                        </button>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        {{else}}
+        <div class="text-center py-5">
+            <i class="ti ti-users-group text-muted" style="font-size:3rem"></i>
+            <h5 class="mt-3 text-muted">Belum ada data orang tua</h5>
+            <p class="text-muted small mb-3">Akun orang tua akan otomatis bertambah saat mendaftarkan siswa baru.</p>
+            <a href="/students/new" class="btn btn-primary btn-sm rounded-2"><i class="ti ti-plus me-1"></i> Tambah Siswa Baru</a>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Modal Reset Password -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="modal-title fs-6 fw-bold"><i class="ti ti-key text-warning me-2"></i>Reset Password Ortu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="/parents/reset-password">
+                <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+                <input type="hidden" name="parent_id" id="reset_parent_id">
+                <div class="modal-body py-3">
+                    <p class="small text-muted mb-3">
+                        Ubah kata sandi untuk akun <strong id="reset_parent_name" class="text-body"></strong> (<code id="reset_parent_user"></code>).
+                    </p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-medium">Password Baru</label>
+                        <div class="input-group">
+                            <input type="password" id="reset_new_password" name="new_password" class="form-control" required minlength="6" placeholder="Min 6 karakter">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePW('reset_new_password',this)" tabindex="-1">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateResetPW()">
+                                <i class="ti ti-refresh me-1"></i>Acak
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning btn-sm"><i class="ti ti-check me-1"></i> Simpan Password Baru</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function openResetModal(id, name, user) {
+    document.getElementById('reset_parent_id').value = id;
+    document.getElementById('reset_parent_name').innerText = name;
+    document.getElementById('reset_parent_user').innerText = '@' + user;
+    document.getElementById('reset_new_password').value = '';
+    
+    var modal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
+    modal.show();
+}
+
+function togglePW(id, btn) {
+    var inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+    } else {
+        inp.type = 'password';
+        btn.innerHTML = '<i class="ti ti-eye"></i>';
+    }
+}
+
+function generateResetPW() {
+    var chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    var pw = 'Ortu#';
+    for (var i = 0; i < 4; i++) {
+        pw += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    var inp = document.getElementById('reset_new_password');
+    inp.value = pw;
+    inp.type = 'text';
+}
+</script>
+{{end}}

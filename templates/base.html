@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{if eq .Page "dashboard"}}Beranda - Les Private
 {{- else if eq .Page "students"}}Siswa - Les Private
+{{- else if eq .Page "parents"}}Orang Tua - Les Private
 {{- else if eq .Page "meetings"}}Pertemuan - Les Private
 {{- else if eq .Page "reports"}}Laporan - Les Private
 {{- else}}Les Private{{end}}</title>
@@ -85,6 +86,7 @@
             <li class="px-4 py-2"><small class="nav-text">Menu</small></li>
             <li><a class="nav-link {{if eq .Page "dashboard"}}active{{end}}" href="/" onclick="closeSidebar()"><i class="ti ti-home"></i><span>Beranda</span></a></li>
             <li><a class="nav-link {{if eq .Page "students"}}active{{end}}" href="/students" onclick="closeSidebar()"><i class="ti ti-users"></i><span>Siswa</span></a></li>
+            <li><a class="nav-link {{if eq .Page "parents"}}active{{end}}" href="/parents" onclick="closeSidebar()"><i class="ti ti-users-group"></i><span>Orang Tua</span></a></li>
             <li><a class="nav-link {{if eq .Page "meetings"}}active{{end}}" href="/meetings" onclick="closeSidebar()"><i class="ti ti-calendar"></i><span>Pertemuan</span></a></li>
             <li><a class="nav-link {{if eq .Page "reports"}}active{{end}}" href="/reports" onclick="closeSidebar()"><i class="ti ti-chart-bar"></i><span>Laporan</span></a></li>
             <li class="px-4 pt-4 pb-2"><small class="nav-text">Lainnya</small></li>
@@ -101,6 +103,7 @@
                 <span class="fw-semibold d-none d-sm-inline" style="font-size:.9rem">
                     {{if eq .Page "dashboard"}}Beranda
                     {{- else if eq .Page "students"}}Siswa
+                    {{- else if eq .Page "parents"}}Orang Tua
                     {{- else if eq .Page "meetings"}}Pertemuan
                     {{- else if eq .Page "reports"}}Laporan
                     {{- else if eq .Page "profile"}}Profil
@@ -139,6 +142,7 @@
     <nav class="bottom-nav">
         <a href="/" class="{{if eq .Page "dashboard"}}active{{end}}"><i class="ti ti-home"></i> Beranda</a>
         <a href="/students" class="{{if eq .Page "students"}}active{{end}}"><i class="ti ti-users"></i> Siswa</a>
+        <a href="/parents" class="{{if eq .Page "parents"}}active{{end}}"><i class="ti ti-users-group"></i> Ortu</a>
         <a href="/meetings" class="{{if eq .Page "meetings"}}active{{end}}"><i class="ti ti-calendar"></i> Jadwal</a>
         <a href="/reports" class="{{if eq .Page "reports"}}active{{end}}"><i class="ti ti-chart-bar"></i> Laporan</a>
     </nav>
