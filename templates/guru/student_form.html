@@ -70,12 +70,15 @@
                 <!-- New account -->
                 <div id="new_section" class="mt-2" style="display:none">
                     <div class="mb-2">
-                        <input type="text" name="parent_new_username" class="form-control" placeholder="Username ortu (3-20 karakter)">
+                        <label class="form-label small text-muted mb-1">Nama Tampilan Ortu</label>
+                        <input type="text" id="parent_new_display" name="parent_new_display" class="form-control" placeholder="Contoh: Mama Budi / Ibu Siska" oninput="autoGenerateParentUsername()">
                     </div>
                     <div class="mb-2">
-                        <input type="text" name="parent_new_display" class="form-control" placeholder="Nama tampilan ortu">
+                        <label class="form-label small text-muted mb-1">Username Ortu (Login ID)</label>
+                        <input type="text" id="parent_new_username" name="parent_new_username" class="form-control" placeholder="Username (misal: mamabudi)">
                     </div>
                     <div class="mb-2">
+                        <label class="form-label small text-muted mb-1">Password Ortu</label>
                         <input type="password" name="parent_new_password" class="form-control" placeholder="Password ortu (min 6 karakter)">
                     </div>
                     <div class="form-text">Ortu bisa login & mengubah password nanti</div>
@@ -91,10 +94,26 @@
 </div>
 
 <script>
+var isUsernameManuallyEdited = false;
+
+document.getElementById('parent_new_username').addEventListener('input', function() {
+    isUsernameManuallyEdited = true;
+});
+
 function toggleParentMode(){
     var mode=document.querySelector('input[name="parent_mode"]:checked').value;
     document.getElementById('existing_section').style.display=mode==='existing'?'block':'none';
     document.getElementById('new_section').style.display=mode==='new'?'block':'none';
+}
+
+function autoGenerateParentUsername() {
+    if (isUsernameManuallyEdited) return;
+    var display = document.getElementById('parent_new_display').value;
+    var username = display.toLowerCase()
+                          .replace(/[^a-z0-9\s]/g, '')
+                          .replace(/\s+/g, '')
+                          .substring(0, 20);
+    document.getElementById('parent_new_username').value = username;
 }
 </script>
 {{end}}
