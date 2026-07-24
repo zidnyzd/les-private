@@ -20,6 +20,8 @@ jobs:
           port: 22
           script: |
             systemctl stop les-private || true
+            sleep 2
+            rm -f /root/les-private/les-app
 
       - name: Deploy to VPS
         uses: appleboy/scp-action@v1.0.0
