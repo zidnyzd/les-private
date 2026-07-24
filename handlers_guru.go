@@ -431,7 +431,7 @@ func handleMeetingList(w http.ResponseWriter, r *http.Request) {
 	fd := r.URL.Query().Get("date")
 
 	// Build query
-	q := `SELECT m.id, m.student_id, s.name, m.date, m.start_time, m.end_time, m.topic, m.notes, m.status
+	q := `SELECT m.id, m.student_id, s.name, m.date, m.start_time, m.end_time, m.status
 		FROM meetings m JOIN students s ON m.student_id = s.id`
 	var args []interface{}
 	var conditions []string
