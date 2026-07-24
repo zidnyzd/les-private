@@ -122,7 +122,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		pdf.Ln(2)
 
 		// Table header: Aspek, Kegiatan, BB, MB, BSH, BSB
-		colW := []float64{28, 68, 14, 14, 14, 14} // Total ~152mm
+		colW := []float64{35, 89, 14, 14, 14, 14} // Total 180mm (full width matching tables below)
 		pdf.SetFont("Helvetica", "B", 9)
 		pdf.SetFillColor(180, 198, 231) // B4C6E7 - same as Word
 		headers := []string{"Aspek", "Kegiatan", "BB", "MB", "BSH", "BSB"}
@@ -153,12 +153,12 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 					pdf.CellFormat(colW[0], 7, "", "1", 0, "L", false, 0, "")
 				}
 
-				// Kegiatan
+				// Kegiatan (Un-truncated full text)
 				kg := strings.TrimSpace(entry["kegiatan"])
 				if kg == "" {
 					kg = "-"
 				}
-				pdf.CellFormat(colW[1], 7, truncateStr(kg, 40), "1", 0, "L", false, 0, "")
+				pdf.CellFormat(colW[1], 7, kg, "1", 0, "L", false, 0, "")
 
 				// BB, MB, BSH, BSB
 				score := entry["score"]
@@ -188,14 +188,14 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		pdf.Ln(6)
 	}
 
-	// Keterangan Stimulasi (Tabel 2 kolom)
+	// Keterangan Stimulasi (Tabel 2 kolom - Sesuai urutan 6 aspek resmi)
 	keterangan := []struct{ label, desc string }{
 		{"Membaca", "Kegiatan pengenalan huruf atau belajar teknis membaca (suku kata, kata, frasa, kalimat)"},
-		{"Berhitung", "Kegiatan pengenalan angka, konsep bilangan, konsep dasar matematika"},
 		{"Menulis", "Kegiatan menguatkan otot jari tangan (motoric halus) menggunakan alat tulis"},
-		{"Brain Exercise", "Kegiatan untuk menstimulasi kemampuan kognitif dan bahasa"},
+		{"Berhitung", "Kegiatan pengenalan angka, konsep bilangan, konsep dasar matematika"},
 		{"Sensory play", "Kegiatan untuk menstimulasi koordinasi mata dengan tangan, panca indera"},
 		{"Kreativitas", "Kegiatan untuk mengembangkan imajinasi dan keterampilan seni"},
+		{"Brain Exercise", "Kegiatan untuk menstimulasi kemampuan kognitif dan bahasa"},
 	}
 
 	skala := []struct{ num, label, desc string }{

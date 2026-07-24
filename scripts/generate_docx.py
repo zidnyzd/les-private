@@ -286,11 +286,11 @@ def main():
 
     keterangan = [
         ('Membaca', 'Kegiatan pengenalan huruf atau belajar teknis membaca (suku kata, kata, frasa, kalimat)'),
-        ('Berhitung', 'Kegiatan pengenalan angka, konsep bilangan, konsep dasar matematika, dan operasi hitung matematika sederhana'),
         ('Menulis', 'Kegiatan menguatkan otot jari tangan (motoric halus) menggunakan alat tulis'),
-        ('Brain Exercise', 'Kegiatan untuk menstimulasi kemampuan kognitif dan bahasa'),
+        ('Berhitung', 'Kegiatan pengenalan angka, konsep bilangan, konsep dasar matematika, dan operasi hitung matematika sederhana'),
         ('Sensory play', 'Kegiatan untuk menstimulasi koordinasi mata dengan tangan, panca indera, melatih fokus dan konsentrasi'),
         ('Kreativitas', 'Kegiatan untuk mengembangkan imajinasi dan keterampilan seni'),
+        ('Brain Exercise', 'Kegiatan untuk menstimulasi kemampuan kognitif dan bahasa'),
     ]
 
     table_ket = doc.add_table(rows=1 + len(keterangan), cols=2)
