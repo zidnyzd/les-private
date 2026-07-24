@@ -133,7 +133,7 @@
                             <div class="d-flex gap-1 justify-content-center">
                                 <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-action-custom text-warning border px-2 py-1 rounded-2" title="Nilai"><i class="ti ti-star fs-6"></i></a>
                                 <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-action-custom text-muted border px-2 py-1 rounded-2" title="Edit"><i class="ti ti-pencil fs-6"></i></a>
-                                <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-action-custom text-danger border px-2 py-1 rounded-2" title="Hapus"><i class="ti ti-trash fs-6"></i></a>
+                                <a href="javascript:void(0)" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-action-custom text-danger border px-2 py-1 rounded-2" title="Hapus"><i class="ti ti-trash fs-6"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -177,7 +177,7 @@
                                 <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-outline-secondary w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Edit"><i class="ti ti-pencil"></i></a>
                             </div>
                             <div class="col-3">
-                                <a href="#" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-outline-danger w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Hapus"><i class="ti ti-trash"></i></a>
+                                <a href="javascript:void(0)" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-outline-danger w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Hapus"><i class="ti ti-trash"></i></a>
                             </div>
                         </div>
                     </div>
@@ -237,6 +237,12 @@ function hapus(id, date) {
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 
 <script>
+function hapus(id, date) {
+    if (confirm('Hapus pertemuan tanggal ' + date + '?\nSemua penilaian juga akan terhapus.')) {
+        window.location = '/meetings/delete?id=' + id;
+    }
+}
+
 function initFilterStudentTomSelect() {
     var el = document.getElementById('filter_student_select');
     if (el && !el.tomselect) {
