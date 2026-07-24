@@ -3,6 +3,40 @@
 <div class="alert alert-success py-2 small mb-3"><i class="ti ti-check me-1"></i>Penilaian berhasil disimpan.</div>
 {{end}}
 
+<style>
+    .score-radio-group {
+        background-color: #f8f9fa;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 6px 10px;
+        transition: background-color 0.15s, border-color 0.15s;
+    }
+    .score-radio-item {
+        cursor: pointer;
+        user-select: none;
+        font-weight: 500;
+    }
+    .score-radio-item input[type="radio"] {
+        cursor: pointer;
+    }
+    .activity-textarea {
+        resize: vertical;
+        min-height: 42px;
+        font-size: 0.85rem;
+    }
+
+    /* Dark Mode Compatibility */
+    [data-bs-theme="dark"] .score-radio-group {
+        background-color: #262a2e !important;
+        border-color: #343a40 !important;
+        color: #e9ecef !important;
+    }
+    [data-bs-theme="dark"] .card-header.aspect-header {
+        background-color: #212529 !important;
+        border-bottom-color: #2c3035 !important;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <div>
         <a href="/meetings" class="text-decoration-none text-muted me-2"><i class="ti ti-arrow-left"></i></a>
@@ -18,13 +52,13 @@
 
 <div class="row g-4">
     <!-- Meeting info -->
-    <div class="col-md-4">
+    <div class="col-lg-4 col-md-5">
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
                 <table class="table table-sm mb-0">
-                    <tr><td class="text-muted small" style="width:35%">Siswa</td><td class="fw-medium">{{.Meeting.StudentName}}</td></tr>
-                    <tr><td class="text-muted small">Tanggal</td><td>{{.Meeting.FormattedDate}}</td></tr>
-                    <tr><td class="text-muted small">Waktu</td><td>{{.Meeting.FormattedTime}}</td></tr>
+                    <tr><td class="text-muted small" style="width:35%">Siswa</td><td class="fw-medium text-body">{{.Meeting.StudentName}}</td></tr>
+                    <tr><td class="text-muted small">Tanggal</td><td class="text-body">{{.Meeting.FormattedDate}}</td></tr>
+                    <tr><td class="text-muted small">Waktu</td><td class="text-body">{{.Meeting.FormattedTime}}</td></tr>
                 </table>
             </div>
         </div>
@@ -44,7 +78,7 @@
     </div>
 
     <!-- Assessment form (Multi-row per aspect) -->
-    <div class="col-md-8">
+    <div class="col-lg-8 col-md-7">
         <div class="card border-0 shadow-sm">
             <div class="card-header border-0 py-3">
                 <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-star me-2 text-warning"></i>Penilaian Perkembangan Siswa</h5>
@@ -55,36 +89,39 @@
                 {{range .Aspects}}
                 {{$key := .Key}}
                 <div class="card border mb-3">
-                    <div class="card-header bg-light bg-opacity-50 py-2 d-flex justify-content-between align-items-center">
+                    <div class="card-header aspect-header py-2 d-flex justify-content-between align-items-center">
                         <span class="fw-bold text-body small"><i class="ti ti-bookmark text-primary me-1"></i>{{.Label}}</span>
                         <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="addActivityRow('{{$key}}')">
                             <i class="ti ti-plus me-1"></i>Tambah Kegiatan
                         </button>
                     </div>
-                    <div class="card-body p-2" id="container_{{$key}}">
+                    <div class="card-body p-2.5" id="container_{{$key}}">
                         {{range $idx, $item := .Items}}
-                        <div class="activity-row row g-2 align-items-center mb-2" id="row_{{$key}}_{{$idx}}">
-                            <div class="col-md-6 col-12">
-                                <input type="text" name="kegiatan_{{$key}}" class="form-control form-control-sm" value="{{$item.Kegiatan}}" placeholder="Nama kegiatan / poin stimulasi...">
+                        <div class="activity-row row g-2 align-items-start mb-3" id="row_{{$key}}_{{$idx}}">
+                            <!-- Field Kegiatan (Luas & Textarea) -->
+                            <div class="col-lg-7 col-12">
+                                <textarea name="kegiatan_{{$key}}" class="form-control activity-textarea" rows="2" placeholder="Nama kegiatan / poin stimulasi (contoh: Membaca buku cerita...)">{{$item.Kegiatan}}</textarea>
                             </div>
-                            <div class="col-md-5 col-10">
-                                <div class="d-flex justify-content-between align-items-center bg-light px-2 py-1 rounded-2" style="font-size:0.75rem;">
-                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Belum Berkembang" {{if eq $item.Score "Belum Berkembang"}}checked{{end}}> BB
+                            <!-- Pilihan Nilai Skala (BB, MB, BSH, BSB) -->
+                            <div class="col-lg-4 col-10">
+                                <div class="score-radio-group d-flex justify-content-between align-items-center" style="font-size:0.75rem;">
+                                    <label class="score-radio-item d-flex align-items-center gap-1">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Belum Berkembang" {{if eq $item.Score "Belum Berkembang"}}checked{{end}}> <span title="Belum Berkembang">BB</span>
                                     </label>
-                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Mulai Berkembang" {{if eq $item.Score "Mulai Berkembang"}}checked{{end}}> MB
+                                    <label class="score-radio-item d-flex align-items-center gap-1">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Mulai Berkembang" {{if eq $item.Score "Mulai Berkembang"}}checked{{end}}> <span title="Mulai Berkembang">MB</span>
                                     </label>
-                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sesuai Harapan" {{if eq $item.Score "Berkembang Sesuai Harapan"}}checked{{end}}> BSH
+                                    <label class="score-radio-item d-flex align-items-center gap-1">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sesuai Harapan" {{if eq $item.Score "Berkembang Sesuai Harapan"}}checked{{end}}> <span title="Berkembang Sesuai Harapan">BSH</span>
                                     </label>
-                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sangat Baik" {{if eq $item.Score "Berkembang Sangat Baik"}}checked{{end}}> BSB
+                                    <label class="score-radio-item d-flex align-items-center gap-1">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sangat Baik" {{if eq $item.Score "Berkembang Sangat Baik"}}checked{{end}}> <span title="Berkembang Sangat Baik">BSB</span>
                                     </label>
                                 </div>
                             </div>
-                            <div class="col-md-1 col-2 text-end">
-                                <button type="button" class="btn btn-sm text-danger p-0" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
+                            <!-- Tombol Hapus Baris -->
+                            <div class="col-lg-1 col-2 text-end pt-1">
+                                <button type="button" class="btn btn-sm text-danger p-1" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
                             </div>
                         </div>
                         {{end}}
@@ -114,31 +151,31 @@ function addActivityRow(aspectKey) {
     var newIdx = currentRows.length;
 
     var rowDiv = document.createElement('div');
-    rowDiv.className = 'activity-row row g-2 align-items-center mb-2';
+    rowDiv.className = 'activity-row row g-2 align-items-start mb-3';
     rowDiv.id = 'row_' + aspectKey + '_' + newIdx;
 
     rowDiv.innerHTML = `
-        <div class="col-md-6 col-12">
-            <input type="text" name="kegiatan_${aspectKey}" class="form-control form-control-sm" placeholder="Nama kegiatan / poin stimulasi...">
+        <div class="col-lg-7 col-12">
+            <textarea name="kegiatan_${aspectKey}" class="form-control activity-textarea" rows="2" placeholder="Nama kegiatan / poin stimulasi (contoh: Membaca buku cerita...)"></textarea>
         </div>
-        <div class="col-md-5 col-10">
-            <div class="d-flex justify-content-between align-items-center bg-light px-2 py-1 rounded-2" style="font-size:0.75rem;">
-                <label class="d-flex align-items-center gap-1 cursor-pointer">
-                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Belum Berkembang"> BB
+        <div class="col-lg-4 col-10">
+            <div class="score-radio-group d-flex justify-content-between align-items-center" style="font-size:0.75rem;">
+                <label class="score-radio-item d-flex align-items-center gap-1">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Belum Berkembang"> <span title="Belum Berkembang">BB</span>
                 </label>
-                <label class="d-flex align-items-center gap-1 cursor-pointer">
-                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Mulai Berkembang"> MB
+                <label class="score-radio-item d-flex align-items-center gap-1">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Mulai Berkembang"> <span title="Mulai Berkembang">MB</span>
                 </label>
-                <label class="d-flex align-items-center gap-1 cursor-pointer">
-                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sesuai Harapan"> BSH
+                <label class="score-radio-item d-flex align-items-center gap-1">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sesuai Harapan"> <span title="Berkembang Sesuai Harapan">BSH</span>
                 </label>
-                <label class="d-flex align-items-center gap-1 cursor-pointer">
-                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sangat Baik"> BSB
+                <label class="score-radio-item d-flex align-items-center gap-1">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sangat Baik"> <span title="Berkembang Sangat Baik">BSB</span>
                 </label>
             </div>
         </div>
-        <div class="col-md-1 col-2 text-end">
-            <button type="button" class="btn btn-sm text-danger p-0" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
+        <div class="col-lg-1 col-2 text-end pt-1">
+            <button type="button" class="btn btn-sm text-danger p-1" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
         </div>
     `;
 
@@ -154,8 +191,7 @@ function removeActivityRow(btn) {
         var aspectKey = container.id.replace('container_', '');
         reindexAspectRows(aspectKey);
     } else {
-        // Clear inputs if only 1 row remains
-        var textInp = row.querySelector('input[type="text"]');
+        var textInp = row.querySelector('textarea');
         if (textInp) textInp.value = '';
         var radios = row.querySelectorAll('input[type="radio"]');
         radios.forEach(function(r) { r.checked = false; });
