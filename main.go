@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"html/template"
@@ -63,6 +64,12 @@ func main() {
 	http.HandleFunc("/login", handleLogin)
 	http.HandleFunc("/register", handleRegister)
 	http.HandleFunc("/logout", handleLogout)
+
+	// Admin routes
+	http.HandleFunc("/teachers", authMiddleware("admin", handleTeacherList))
+	http.HandleFunc("/teachers/new", authMiddleware("admin", handleTeacherNew))
+	http.HandleFunc("/teachers/edit", authMiddleware("admin", handleTeacherEdit))
+	http.HandleFunc("/teachers/delete", authMiddleware("admin", handleTeacherDelete))
 
 	// Guru routes
 	http.HandleFunc("/", authMiddleware("guru", handleDashboard))
@@ -154,9 +161,17 @@ func authMiddleware(role string, next http.HandlerFunc) http.HandlerFunc {
 			userRole = role
 		}
 
-		if userRole != role {
+		// Allow 'admin' to access 'guru' routes
+		roleAllowed := false
+		if userRole == role {
+			roleAllowed = true
+		} else if role == "guru" && userRole == "admin" {
+			roleAllowed = true
+		}
+
+		if !roleAllowed {
 			// Redirect to correct dashboard
-			if userRole == "guru" {
+			if userRole == "guru" || userRole == "admin" {
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			} else {
 				http.Redirect(w, r, "/parent", http.StatusSeeOther)
@@ -202,12 +217,18 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 	// Today's meetings
 	today := time.Now().Format("2006-01-02")
 	var todayMeetings []Meeting
-	rows, _ := db.Query(`
-		SELECT m.id, m.student_id, s.name, m.date, m.start_time, m.end_time, m.status
-		FROM meetings m
-		JOIN students s ON m.student_id = s.id
-		WHERE m.date = ?
-		ORDER BY m.start_time`, today)
+	var rows *sql.Rows
+	if user.Role == "admin" {
+		rows, _ = db.Query(`
+			SELECT m.id, m.student_id, s.name, m.date, m.start_time, m.end_time, m.status
+			FROM meetings m JOIN students s ON m.student_id = s.id
+			WHERE m.date = ? ORDER BY m.start_time`, today)
+	} else {
+		rows, _ = db.Query(`
+			SELECT m.id, m.student_id, s.name, m.date, m.start_time, m.end_time, m.status
+			FROM meetings m JOIN students s ON m.student_id = s.id
+			WHERE m.date = ? AND (m.teacher_id = ? OR s.teacher_id = ?) ORDER BY m.start_time`, today, user.ID, user.ID)
+	}
 	if rows != nil {
 		for rows.Next() {
 			var m Meeting
@@ -220,10 +241,16 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 
 	// Counts
 	var totalStudents, totalParents, totalMeetings, upcomingCount int
-	db.QueryRow("SELECT COUNT(*) FROM students").Scan(&totalStudents)
+	if user.Role == "admin" {
+		db.QueryRow("SELECT COUNT(*) FROM students").Scan(&totalStudents)
+		db.QueryRow("SELECT COUNT(*) FROM meetings WHERE status='terjadwal'").Scan(&upcomingCount)
+		db.QueryRow("SELECT COUNT(*) FROM meetings").Scan(&totalMeetings)
+	} else {
+		db.QueryRow("SELECT COUNT(*) FROM students WHERE teacher_id=?", user.ID).Scan(&totalStudents)
+		db.QueryRow("SELECT COUNT(*) FROM meetings WHERE status='terjadwal' AND (teacher_id=? OR student_id IN (SELECT id FROM students WHERE teacher_id=?))", user.ID, user.ID).Scan(&upcomingCount)
+		db.QueryRow("SELECT COUNT(*) FROM meetings WHERE teacher_id=? OR student_id IN (SELECT id FROM students WHERE teacher_id=?)", user.ID, user.ID).Scan(&totalMeetings)
+	}
 	db.QueryRow("SELECT COUNT(*) FROM users WHERE role='ortu'").Scan(&totalParents)
-	db.QueryRow("SELECT COUNT(*) FROM meetings WHERE status='terjadwal'").Scan(&upcomingCount)
-	db.QueryRow("SELECT COUNT(*) FROM meetings").Scan(&totalMeetings)
 
 	data := DashboardData{
 		UserName:      user.DisplayName,

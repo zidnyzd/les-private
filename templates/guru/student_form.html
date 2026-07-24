@@ -33,6 +33,19 @@
                 <input type="text" name="address" class="form-control" value="{{.Student.Address}}" placeholder="Alamat / daerah">
             </div>
 
+            <!-- Teacher Section -->
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Guru Pengajar / Pembimbing <span class="text-danger">*</span></label>
+                <select name="teacher_id" class="form-select" required>
+                    {{range .Teachers}}
+                    <option value="{{.ID}}" {{if eq .ID $.Student.TeacherID}}selected{{end}}>
+                        {{.DisplayName}} ({{.Role}})
+                    </option>
+                    {{end}}
+                </select>
+                <div class="form-text">Pilih pengajar binaan utama untuk siswa ini</div>
+            </div>
+
             <!-- Orang Tua Section -->
             <div class="mb-4">
                 <label class="form-label small fw-medium">Orang Tua</label>

@@ -85,6 +85,9 @@
         <ul class="nav flex-column">
             <li class="px-4 py-2"><small class="nav-text">Menu</small></li>
             <li><a class="nav-link {{if eq .Page "dashboard"}}active{{end}}" href="/" onclick="closeSidebar()"><i class="ti ti-home"></i><span>Beranda</span></a></li>
+            {{if eq .UserRole "admin"}}
+            <li><a class="nav-link {{if eq .Page "teachers"}}active{{end}}" href="/teachers" onclick="closeSidebar()"><i class="ti ti-school"></i><span>Pengajar (Guru)</span></a></li>
+            {{end}}
             <li><a class="nav-link {{if eq .Page "students"}}active{{end}}" href="/students" onclick="closeSidebar()"><i class="ti ti-users"></i><span>Siswa</span></a></li>
             <li><a class="nav-link {{if eq .Page "parents"}}active{{end}}" href="/parents" onclick="closeSidebar()"><i class="ti ti-users-group"></i><span>Orang Tua</span></a></li>
             <li><a class="nav-link {{if eq .Page "meetings"}}active{{end}}" href="/meetings" onclick="closeSidebar()"><i class="ti ti-calendar"></i><span>Pertemuan</span></a></li>
@@ -102,6 +105,7 @@
                 <span class="fw-bold d-sm-none" style="color:#2c7be5">Les Private</span>
                 <span class="fw-semibold d-none d-sm-inline" style="font-size:.9rem">
                     {{if eq .Page "dashboard"}}Beranda
+                    {{- else if eq .Page "teachers"}}Pengajar (Guru)
                     {{- else if eq .Page "students"}}Siswa
                     {{- else if eq .Page "parents"}}Orang Tua
                     {{- else if eq .Page "meetings"}}Pertemuan

@@ -18,6 +18,7 @@ type StudentPageData struct {
 	DashboardData
 	Students   []Student
 	Parents    []User
+	Teachers   []User
 	Search     string
 	Student    Student
 	EditMode   bool
@@ -34,16 +35,30 @@ func handleStudentList(w http.ResponseWriter, r *http.Request) {
 	var rows *sql.Rows
 	var err error
 
-	if search != "" {
-		rows, err = db.Query(`
-			SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
-			FROM students s LEFT JOIN users u ON s.parent_id = u.id
-			WHERE s.name LIKE ? OR s.grade LIKE ? ORDER BY s.name`, "%"+search+"%", "%"+search+"%")
+	if user.Role == "guru" {
+		if search != "" {
+			rows, err = db.Query(`
+				SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
+				FROM students s LEFT JOIN users u ON s.parent_id = u.id
+				WHERE (s.name LIKE ? OR s.grade LIKE ?) AND (s.teacher_id = ? OR s.teacher_id IS NULL OR s.teacher_id = 0) ORDER BY s.name`, "%"+search+"%", "%"+search+"%", user.ID)
+		} else {
+			rows, err = db.Query(`
+				SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
+				FROM students s LEFT JOIN users u ON s.parent_id = u.id
+				WHERE s.teacher_id = ? OR s.teacher_id IS NULL OR s.teacher_id = 0 ORDER BY s.name`, user.ID)
+		}
 	} else {
-		rows, err = db.Query(`
-			SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
-			FROM students s LEFT JOIN users u ON s.parent_id = u.id
-			ORDER BY s.name`)
+		if search != "" {
+			rows, err = db.Query(`
+				SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
+				FROM students s LEFT JOIN users u ON s.parent_id = u.id
+				WHERE s.name LIKE ? OR s.grade LIKE ? ORDER BY s.name`, "%"+search+"%", "%"+search+"%")
+		} else {
+			rows, err = db.Query(`
+				SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,'')
+				FROM students s LEFT JOIN users u ON s.parent_id = u.id
+				ORDER BY s.name`)
+		}
 	}
 	if err == nil && rows != nil {
 		for rows.Next() {
@@ -58,7 +73,7 @@ func handleStudentList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := StudentPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "students",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "students",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Students: students,
 		Search:   search,
@@ -139,14 +154,19 @@ func handleStudentNew(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		_, err := db.Exec("INSERT INTO students (name, age, grade, address, parent_id) VALUES (?,?,?,?,?)",
-			strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), parentID)
+		teacherID, _ := strconv.Atoi(r.FormValue("teacher_id"))
+		if teacherID == 0 {
+			teacherID = user.ID
+		}
+
+		_, err := db.Exec("INSERT INTO students (name, age, grade, address, parent_id, teacher_id) VALUES (?,?,?,?,?,?)",
+			strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), parentID, teacherID)
 		if err != nil {
 			log.Printf("[AUDIT] student create fail err=%v", err)
 			renderStudentForm(w, r, user, Student{}, "Gagal menyimpan data")
 			return
 		}
-		log.Printf("[AUDIT] student create success name=%q parent_id=%d", name, parentID)
+		log.Printf("[AUDIT] student create success name=%q parent_id=%d teacher_id=%d", name, parentID, teacherID)
 		http.Redirect(w, r, "/students?added=1", http.StatusSeeOther)
 		return
 	}
@@ -168,11 +188,30 @@ func renderStudentForm(w http.ResponseWriter, r *http.Request, user User, s Stud
 		parents = []User{}
 	}
 
+	var teachers []User
+	trows, err := db.Query("SELECT id, username, display_name, role FROM users WHERE role IN ('guru','admin') ORDER BY display_name ASC")
+	if err == nil && trows != nil {
+		for trows.Next() {
+			var t User
+			trows.Scan(&t.ID, &t.Username, &t.DisplayName, &t.Role)
+			teachers = append(teachers, t)
+		}
+		trows.Close()
+	}
+	if teachers == nil {
+		teachers = []User{}
+	}
+
+	if s.TeacherID == 0 {
+		s.TeacherID = user.ID
+	}
+
 	data := StudentPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "students",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "students",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Student:  s,
 		Parents:  parents,
+		Teachers: teachers,
 		EditMode: s.ID > 0,
 		Error:    errMsg,
 	}
@@ -236,25 +275,30 @@ func handleStudentEdit(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if parentMode == "none" {
-			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=NULL WHERE id=?",
-				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), id)
-		} else if parentID > 0 {
-			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=? WHERE id=?",
-				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), parentID, id)
-		} else {
-			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=? WHERE id=?",
-				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), id)
+		teacherID, _ := strconv.Atoi(r.FormValue("teacher_id"))
+		if teacherID == 0 {
+			teacherID = user.ID
 		}
-		log.Printf("[AUDIT] student update id=%s parent_id=%d", id, parentID)
+
+		if parentMode == "none" {
+			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=NULL, teacher_id=? WHERE id=?",
+				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), teacherID, id)
+		} else if parentID > 0 {
+			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=?, teacher_id=? WHERE id=?",
+				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), parentID, teacherID, id)
+		} else {
+			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, teacher_id=? WHERE id=?",
+				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), teacherID, id)
+		}
+		log.Printf("[AUDIT] student update id=%s parent_id=%d teacher_id=%d", id, parentID, teacherID)
 		http.Redirect(w, r, "/students?updated=1", http.StatusSeeOther)
 		return
 	}
 
 	var s Student
-	err := db.QueryRow(`SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,''), COALESCE(u.username,'')
+	err := db.QueryRow(`SELECT s.id, s.name, s.age, s.grade, s.address, COALESCE(s.parent_id,0), COALESCE(u.display_name,''), COALESCE(u.username,''), COALESCE(s.teacher_id,0)
 		FROM students s LEFT JOIN users u ON s.parent_id = u.id WHERE s.id=?`, id).
-		Scan(&s.ID, &s.Name, &s.Age, &s.Grade, &s.Address, &s.ParentID, &s.ParentName, &s.ParentUsername)
+		Scan(&s.ID, &s.Name, &s.Age, &s.Grade, &s.Address, &s.ParentID, &s.ParentName, &s.ParentUsername, &s.TeacherID)
 	if err != nil {
 		http.Redirect(w, r, "/students", http.StatusSeeOther)
 		return
@@ -326,7 +370,7 @@ func handleParentList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := ParentPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "parents",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "parents",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Parents: parents,
 		Search:  search,
@@ -446,6 +490,10 @@ func handleMeetingList(w http.ResponseWriter, r *http.Request) {
 	var args []interface{}
 	var conditions []string
 
+	if user.Role == "guru" {
+		conditions = append(conditions, "(m.teacher_id=? OR s.teacher_id=? OR m.teacher_id IS NULL OR m.teacher_id=0)")
+		args = append(args, user.ID, user.ID)
+	}
 	if fs != "" {
 		conditions = append(conditions, "m.student_id=?")
 		args = append(args, fs)
@@ -476,10 +524,10 @@ func handleMeetingList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// All students for filter dropdown
-	students := getAllStudents()
+	students := getAllStudents(user)
 
 	data := MeetingPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "meetings",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "meetings",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Meetings:      meetings,
 		Students:      students,
@@ -519,9 +567,9 @@ func handleMeetingNew(w http.ResponseWriter, r *http.Request) {
 }
 
 func renderMeetingForm(w http.ResponseWriter, r *http.Request, user User, m Meeting, errMsg string) {
-	students := getAllStudents()
+	students := getAllStudents(user)
 	data := MeetingPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "meetings",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "meetings",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Students: students,
 		Meeting:  m,
@@ -557,9 +605,9 @@ func handleMeetingEdit(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/meetings", http.StatusSeeOther)
 		return
 	}
-	students := getAllStudents()
+	students := getAllStudents(user)
 	data := MeetingPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "meetings",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "meetings",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Students: students,
 		Meeting:  m,
@@ -582,9 +630,15 @@ func handleMeetingDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper: get all students (id + name) for dropdown
-func getAllStudents() []Student {
+func getAllStudents(user User) []Student {
 	var students []Student
-	rows, err := db.Query("SELECT id, name FROM students ORDER BY name")
+	var rows *sql.Rows
+	var err error
+	if user.Role == "guru" {
+		rows, err = db.Query("SELECT id, name FROM students WHERE teacher_id = ? OR teacher_id IS NULL OR teacher_id = 0 ORDER BY name", user.ID)
+	} else {
+		rows, err = db.Query("SELECT id, name FROM students ORDER BY name")
+	}
 	if err == nil && rows != nil {
 		for rows.Next() {
 			var s Student
@@ -685,7 +739,7 @@ func handleMeetingDetail(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := MeetingDetailPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "meetings",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "meetings",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Meeting:   m,
 		Aspects:   items,
@@ -740,10 +794,18 @@ func handleReportList(w http.ResponseWriter, r *http.Request) {
 	_, user := getUser(r)
 
 	var students []ReportStudentItem
-	rows, _ := db.Query(`
-		SELECT s.id, s.name, s.age,
-			(SELECT COUNT(*) FROM meetings WHERE student_id=s.id) as total
-		FROM students s ORDER BY s.name`)
+	var rows *sql.Rows
+	if user.Role == "guru" {
+		rows, _ = db.Query(`
+			SELECT s.id, s.name, s.age,
+				(SELECT COUNT(*) FROM meetings WHERE student_id=s.id) as total
+			FROM students s WHERE s.teacher_id = ? OR s.teacher_id IS NULL OR s.teacher_id = 0 ORDER BY s.name`, user.ID)
+	} else {
+		rows, _ = db.Query(`
+			SELECT s.id, s.name, s.age,
+				(SELECT COUNT(*) FROM meetings WHERE student_id=s.id) as total
+			FROM students s ORDER BY s.name`)
+	}
 	if rows != nil {
 		for rows.Next() {
 			var s ReportStudentItem
@@ -757,7 +819,7 @@ func handleReportList(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := ReportPageData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "reports",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "reports",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Students: students,
 	}
@@ -881,7 +943,7 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 	dataJSON, _ := json.Marshal(chartData)
 
 	data := StudentReportData{
-		DashboardData: DashboardData{UserName: user.DisplayName, Page: "reports",
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "reports",
 			CSRFToken: getCSRFToken(getSessionCookie(r))},
 		Student:     s,
 		Month:       month,
@@ -895,4 +957,168 @@ func handleReportStudent(w http.ResponseWriter, r *http.Request) {
 		HasData:     len(meetings) > 0,
 	}
 	execGuruTemplate(w, "templates/guru/report_student.html", data)
+}
+
+// ====== TEACHER MANAGEMENT HANDLERS (ADMIN ONLY) ======
+
+type TeacherItem struct {
+	ID            int
+	Username      string
+	DisplayName   string
+	TotalStudents int
+	CreatedAt     string
+}
+
+type TeacherPageData struct {
+	DashboardData
+	Teachers []TeacherItem
+	Teacher  TeacherItem
+	EditMode bool
+	Success  string
+	Error    string
+}
+
+func handleTeacherList(w http.ResponseWriter, r *http.Request) {
+	_, user := getUser(r)
+
+	var teachers []TeacherItem
+	rows, err := db.Query(`
+		SELECT u.id, u.username, u.display_name, strftime('%d-%m-%Y', u.created_at),
+			(SELECT COUNT(*) FROM students WHERE teacher_id = u.id) as total
+		FROM users u WHERE u.role = 'guru' ORDER BY u.display_name ASC`)
+	if err == nil && rows != nil {
+		for rows.Next() {
+			var t TeacherItem
+			rows.Scan(&t.ID, &t.Username, &t.DisplayName, &t.CreatedAt, &t.TotalStudents)
+			teachers = append(teachers, t)
+		}
+		rows.Close()
+	}
+	if teachers == nil {
+		teachers = []TeacherItem{}
+	}
+
+	data := TeacherPageData{
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "teachers",
+			CSRFToken: getCSRFToken(getSessionCookie(r))},
+		Teachers: teachers,
+		Success:  r.URL.Query().Get("success"),
+	}
+	execGuruTemplate(w, "templates/guru/teachers.html", data)
+}
+
+func handleTeacherNew(w http.ResponseWriter, r *http.Request) {
+	_, user := getUser(r)
+
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		tUser := strings.TrimSpace(r.FormValue("username"))
+		tDisplay := strings.TrimSpace(r.FormValue("display_name"))
+		tPass := r.FormValue("password")
+
+		if len(tUser) < 3 || len(tUser) > 20 {
+			renderTeacherForm(w, r, user, TeacherItem{}, "Username guru harus 3-20 karakter")
+			return
+		}
+		if len(tPass) < 6 || len(tPass) > 72 {
+			renderTeacherForm(w, r, user, TeacherItem{}, "Password guru harus 6-72 karakter")
+			return
+		}
+		if tDisplay == "" {
+			tDisplay = tUser
+		}
+
+		var exists int
+		db.QueryRow("SELECT COUNT(*) FROM users WHERE username=?", tUser).Scan(&exists)
+		if exists > 0 {
+			renderTeacherForm(w, r, user, TeacherItem{}, "Username '"+tUser+"' sudah digunakan")
+			return
+		}
+
+		hash, _ := bcrypt.GenerateFromPassword([]byte(tPass), bcrypt.DefaultCost)
+		_, err := db.Exec("INSERT INTO users (username, display_name, password_hash, role) VALUES (?,?,?,?)",
+			tUser, tDisplay, string(hash), "guru")
+		if err != nil {
+			log.Printf("[AUDIT] teacher create fail err=%v", err)
+			renderTeacherForm(w, r, user, TeacherItem{}, "Gagal membuat akun guru")
+			return
+		}
+
+		log.Printf("[AUDIT] teacher create success user=%q by_admin=%s", tUser, user.Username)
+		http.Redirect(w, r, "/teachers?success=Akun+guru+berhasil+dibuat", http.StatusSeeOther)
+		return
+	}
+
+	renderTeacherForm(w, r, user, TeacherItem{}, "")
+}
+
+func renderTeacherForm(w http.ResponseWriter, r *http.Request, user User, t TeacherItem, errMsg string) {
+	data := TeacherPageData{
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "teachers",
+			CSRFToken: getCSRFToken(getSessionCookie(r))},
+		Teacher: t,
+		Error:   errMsg,
+	}
+	execGuruTemplate(w, "templates/guru/teacher_form.html", data)
+}
+
+func handleTeacherEdit(w http.ResponseWriter, r *http.Request) {
+	_, user := getUser(r)
+	id := r.URL.Query().Get("id")
+
+	if r.Method == http.MethodPost {
+		r.ParseForm()
+		tDisplay := strings.TrimSpace(r.FormValue("display_name"))
+		newPass := r.FormValue("password")
+
+		if tDisplay == "" {
+			renderTeacherForm(w, r, user, TeacherItem{ID: parseID(id)}, "Nama tampilan harus diisi")
+			return
+		}
+
+		db.Exec("UPDATE users SET display_name=? WHERE id=? AND role='guru'", tDisplay, id)
+
+		if newPass != "" {
+			if len(newPass) < 6 || len(newPass) > 72 {
+				renderTeacherForm(w, r, user, TeacherItem{ID: parseID(id), DisplayName: tDisplay}, "Password baru harus 6-72 karakter")
+				return
+			}
+			hash, _ := bcrypt.GenerateFromPassword([]byte(newPass), bcrypt.DefaultCost)
+			db.Exec("UPDATE users SET password_hash=? WHERE id=? AND role='guru'", string(hash), id)
+		}
+
+		log.Printf("[AUDIT] teacher update id=%s by_admin=%s", id, user.Username)
+		http.Redirect(w, r, "/teachers?success=Akun+guru+berhasil+diubah", http.StatusSeeOther)
+		return
+	}
+
+	var t TeacherItem
+	err := db.QueryRow("SELECT id, username, display_name FROM users WHERE id=? AND role='guru'", id).
+		Scan(&t.ID, &t.Username, &t.DisplayName)
+	if err != nil {
+		http.Redirect(w, r, "/teachers", http.StatusSeeOther)
+		return
+	}
+
+	data := TeacherPageData{
+		DashboardData: DashboardData{UserName: user.DisplayName, UserRole: user.Role, Page: "teachers",
+			CSRFToken: getCSRFToken(getSessionCookie(r))},
+		Teacher:  t,
+		EditMode: true,
+	}
+	execGuruTemplate(w, "templates/guru/teacher_form.html", data)
+}
+
+func handleTeacherDelete(w http.ResponseWriter, r *http.Request) {
+	id := r.URL.Query().Get("id")
+	if id != "" {
+		db.Exec("DELETE FROM users WHERE id=? AND role='guru'", id)
+		log.Printf("[AUDIT] teacher delete id=%s", id)
+	}
+	http.Redirect(w, r, "/teachers?success=Akun+guru+berhasil+dihapus", http.StatusSeeOther)
+}
+
+func parseID(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
 }

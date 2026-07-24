@@ -1,0 +1,75 @@
+{{define "content"}}
+{{if .Error}}
+<div class="alert alert-danger py-2 small mb-3"><i class="ti ti-alert-circle me-1"></i>{{.Error}}</div>
+{{end}}
+
+<div class="d-flex align-items-center mb-3">
+    <a href="/teachers" class="text-decoration-none text-muted me-2"><i class="ti ti-arrow-left"></i></a>
+    <h1 class="fs-4 fw-semibold mb-0">
+        {{if .EditMode}}Edit Akun Guru{{else}}Tambah Akun Guru Baru{{end}}
+    </h1>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:500px">
+    <div class="card-body p-4">
+        <form method="POST" action="/teachers/{{if .EditMode}}edit?id={{.Teacher.ID}}{{else}}new{{end}}">
+            <input type="hidden" name="_csrf" value="{{.CSRFToken}}">
+            
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Nama Tampilan (Guru) <span class="text-danger">*</span></label>
+                <input type="text" name="display_name" class="form-control" required value="{{.Teacher.DisplayName}}" placeholder="Contoh: Ibu Miranda / Pak Budi">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-medium">Username (Login ID) <span class="text-danger">*</span></label>
+                <input type="text" name="username" class="form-control" required value="{{.Teacher.Username}}" placeholder="3-20 karakter" {{if .EditMode}}readonly{{end}}>
+                {{if .EditMode}}<div class="form-text">Username tidak dapat diubah setelah dibuat.</div>{{end}}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label small fw-medium">
+                    {{if .EditMode}}Reset Password Baru (Opsional){{else}}Password Login <span class="text-danger">*</span>{{end}}
+                </label>
+                <div class="input-group">
+                    <input type="password" id="teacher_password" name="password" class="form-control" placeholder="{{if .EditMode}}Kosongkan jika tidak diubah{{else}}Min 6 karakter{{end}}" {{if not .EditMode}}required{{end}}>
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePW('teacher_password',this)" tabindex="-1" title="Lihat/Sembunyikan Password">
+                        <i class="ti ti-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="generateRandomPW()" title="Buat password acak">
+                        <i class="ti ti-refresh me-1"></i>Acak
+                    </button>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary rounded-2 px-3"><i class="ti ti-check me-1"></i> Simpan</button>
+                <a href="/teachers" class="btn btn-outline-secondary rounded-2">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function togglePW(id, btn) {
+    var inp = document.getElementById(id);
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '<i class="ti ti-eye-off"></i>';
+    } else {
+        inp.type = 'password';
+        btn.innerHTML = '<i class="ti ti-eye"></i>';
+    }
+}
+
+function generateRandomPW() {
+    var chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+    var pw = 'Guru#';
+    for (var i = 0; i < 4; i++) {
+        pw += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    var inp = document.getElementById('teacher_password');
+    inp.value = pw;
+    inp.type = 'text';
+}
+</script>
+{{end}}

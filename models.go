@@ -8,14 +8,16 @@ type User struct {
 }
 
 type Student struct {
-	ID         int
-	Name       string
-	Age        int
-	Grade      string
-	Address    string
-	ParentID   int
+	ID             int
+	Name           string
+	Age            int
+	Grade          string
+	Address        string
+	ParentID       int
 	ParentName     string
 	ParentUsername string
+	TeacherID      int
+	TeacherName    string
 }
 
 type Meeting struct {
@@ -28,6 +30,8 @@ type Meeting struct {
 	Status        string // terjadwal, selesai, batal
 	FormattedDate string
 	FormattedTime string
+	TeacherID     int
+	TeacherName   string
 }
 
 type Assessment struct {
@@ -66,6 +70,7 @@ type RegisterData struct {
 // DashboardData untuk dashboard guru
 type DashboardData struct {
 	UserName        string
+	UserRole        string
 	TodayMeetings   []Meeting
 	TotalStudents   int
 	TotalParents    int

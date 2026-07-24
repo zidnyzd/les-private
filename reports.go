@@ -339,7 +339,13 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 
 	// Signature columns
 	var guruName string
-	db.QueryRow("SELECT display_name FROM users WHERE role='guru' LIMIT 1").Scan(&guruName)
+	db.QueryRow(`
+		SELECT u.display_name FROM students s 
+		JOIN users u ON s.teacher_id = u.id 
+		WHERE s.id = ?`, studentID).Scan(&guruName)
+	if guruName == "" {
+		db.QueryRow("SELECT display_name FROM users WHERE role IN ('guru','admin') LIMIT 1").Scan(&guruName)
+	}
 	if guruName == "" {
 		guruName = "Guru Pengajar"
 	}
@@ -384,7 +390,13 @@ func handleReportWord(w http.ResponseWriter, r *http.Request) {
 
 	// Get teacher/guru name
 	var guruName string
-	db.QueryRow("SELECT display_name FROM users WHERE role='guru' LIMIT 1").Scan(&guruName)
+	db.QueryRow(`
+		SELECT u.display_name FROM students s 
+		JOIN users u ON s.teacher_id = u.id 
+		WHERE s.id = ?`, studentID).Scan(&guruName)
+	if guruName == "" {
+		db.QueryRow("SELECT display_name FROM users WHERE role IN ('guru','admin') LIMIT 1").Scan(&guruName)
+	}
 	if guruName == "" {
 		guruName = "Guru Pengajar"
 	}
