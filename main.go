@@ -139,7 +139,7 @@ func authMiddleware(role string, next http.HandlerFunc) http.HandlerFunc {
 			http.Redirect(w, r, "/login", http.StatusSeeOther)
 			return
 		}
-		uid, userRole, ok := getSessionUser(c.Value)
+		uid, _, ok := getSessionUser(c.Value)
 		if !ok {
 			// fallback to DB
 			var dbUID int
@@ -158,8 +158,15 @@ func authMiddleware(role string, next http.HandlerFunc) http.HandlerFunc {
 			}
 			sessionsMu.Unlock()
 			uid = dbUID
-			userRole = role
 		}
+
+		// Fetch current real-time role from users table to prevent stale session roles
+		u, err := getUserByID(uid)
+		if err != nil {
+			http.Redirect(w, r, "/login", http.StatusSeeOther)
+			return
+		}
+		userRole := u.Role
 
 		// Allow 'admin' to access 'guru' routes
 		roleAllowed := false
@@ -254,6 +261,7 @@ func handleDashboard(w http.ResponseWriter, r *http.Request) {
 
 	data := DashboardData{
 		UserName:      user.DisplayName,
+		UserRole:      user.Role,
 		TodayMeetings: todayMeetings,
 		TotalStudents: totalStudents,
 		TotalParents:  totalParents,
