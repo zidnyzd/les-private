@@ -43,50 +43,54 @@
         </div>
     </div>
 
-    <!-- Assessment form (6 aspects) -->
+    <!-- Assessment form (Multi-row per aspect) -->
     <div class="col-md-8">
         <div class="card border-0 shadow-sm">
             <div class="card-header border-0 py-3">
-                <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-star me-2 text-warning"></i>Penilaian 6 Aspek</h5>
-                <small class="text-muted">Isi kegiatan & nilai setiap aspek perkembangan siswa</small>
+                <h5 class="mb-0 fs-6 fw-semibold"><i class="ti ti-star me-2 text-warning"></i>Penilaian Perkembangan Siswa</h5>
+                <small class="text-muted">Isi kegiatan & nilai setiap aspek. Klik <strong>+ Tambah Kegiatan</strong> untuk menambah poin kegiatan pada aspek terkait.</small>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-bordered align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:20%">Aspek</th>
-                                <th style="width:35%">Kegiatan</th>
-                                <th class="text-center" style="width:11%">BB</th>
-                                <th class="text-center" style="width:11%">MB</th>
-                                <th class="text-center" style="width:11%">BSH</th>
-                                <th class="text-center" style="width:11%">BSB</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range .Aspects}}
-                            <tr>
-                                <td class="fw-medium small">{{.Label}}</td>
-                                <td>
-                                    <input type="text" name="kegiatan_{{.Key}}" class="form-control form-control-sm" 
-                                        value="{{.Kegiatan}}" placeholder="Kegiatan...">
-                                </td>
-                                {{$key := .Key}}
-                                {{$val := .Score}}
-                                {{range $i, $label := $.ScoreList}}
-                                <td class="text-center">
-                                    <input class="form-check-input" type="radio"
-                                        name="aspect_{{$key}}" 
-                                        value="{{$label}}"
-                                        {{if eq $val $label}}checked{{end}}
-                                        title="{{$label}}">
-                                </td>
-                                {{end}}
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
+            <div class="card-body p-3">
+                {{$scoreList := $.ScoreList}}
+                {{range .Aspects}}
+                {{$key := .Key}}
+                <div class="card border mb-3">
+                    <div class="card-header bg-light bg-opacity-50 py-2 d-flex justify-content-between align-items-center">
+                        <span class="fw-bold text-body small"><i class="ti ti-bookmark text-primary me-1"></i>{{.Label}}</span>
+                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:0.75rem;" onclick="addActivityRow('{{$key}}')">
+                            <i class="ti ti-plus me-1"></i>Tambah Kegiatan
+                        </button>
+                    </div>
+                    <div class="card-body p-2" id="container_{{$key}}">
+                        {{range $idx, $item := .Items}}
+                        <div class="activity-row row g-2 align-items-center mb-2" id="row_{{$key}}_{{$idx}}">
+                            <div class="col-md-6 col-12">
+                                <input type="text" name="kegiatan_{{$key}}" class="form-control form-control-sm" value="{{$item.Kegiatan}}" placeholder="Nama kegiatan / poin stimulasi...">
+                            </div>
+                            <div class="col-md-5 col-10">
+                                <div class="d-flex justify-content-between align-items-center bg-light px-2 py-1 rounded-2" style="font-size:0.75rem;">
+                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Belum Berkembang" {{if eq $item.Score "Belum Berkembang"}}checked{{end}}> BB
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Mulai Berkembang" {{if eq $item.Score "Mulai Berkembang"}}checked{{end}}> MB
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sesuai Harapan" {{if eq $item.Score "Berkembang Sesuai Harapan"}}checked{{end}}> BSH
+                                    </label>
+                                    <label class="d-flex align-items-center gap-1 cursor-pointer">
+                                        <input type="radio" name="aspect_{{$key}}_{{$idx}}" value="Berkembang Sangat Baik" {{if eq $item.Score "Berkembang Sangat Baik"}}checked{{end}}> BSB
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-1 col-2 text-end">
+                                <button type="button" class="btn btn-sm text-danger p-0" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
                 </div>
+                {{end}}
             </div>
             <div class="card-footer border-0 px-3 py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                 <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i> Simpan Penilaian</button>
@@ -102,4 +106,72 @@
 </div>
 
 </form>
+
+<script>
+function addActivityRow(aspectKey) {
+    var container = document.getElementById('container_' + aspectKey);
+    var currentRows = container.querySelectorAll('.activity-row');
+    var newIdx = currentRows.length;
+
+    var rowDiv = document.createElement('div');
+    rowDiv.className = 'activity-row row g-2 align-items-center mb-2';
+    rowDiv.id = 'row_' + aspectKey + '_' + newIdx;
+
+    rowDiv.innerHTML = `
+        <div class="col-md-6 col-12">
+            <input type="text" name="kegiatan_${aspectKey}" class="form-control form-control-sm" placeholder="Nama kegiatan / poin stimulasi...">
+        </div>
+        <div class="col-md-5 col-10">
+            <div class="d-flex justify-content-between align-items-center bg-light px-2 py-1 rounded-2" style="font-size:0.75rem;">
+                <label class="d-flex align-items-center gap-1 cursor-pointer">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Belum Berkembang"> BB
+                </label>
+                <label class="d-flex align-items-center gap-1 cursor-pointer">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Mulai Berkembang"> MB
+                </label>
+                <label class="d-flex align-items-center gap-1 cursor-pointer">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sesuai Harapan"> BSH
+                </label>
+                <label class="d-flex align-items-center gap-1 cursor-pointer">
+                    <input type="radio" name="aspect_${aspectKey}_${newIdx}" value="Berkembang Sangat Baik"> BSB
+                </label>
+            </div>
+        </div>
+        <div class="col-md-1 col-2 text-end">
+            <button type="button" class="btn btn-sm text-danger p-0" onclick="removeActivityRow(this)" title="Hapus poin ini"><i class="ti ti-x fs-5"></i></button>
+        </div>
+    `;
+
+    container.appendChild(rowDiv);
+    reindexAspectRows(aspectKey);
+}
+
+function removeActivityRow(btn) {
+    var row = btn.closest('.activity-row');
+    var container = row.parentElement;
+    if (container.querySelectorAll('.activity-row').length > 1) {
+        row.remove();
+        var aspectKey = container.id.replace('container_', '');
+        reindexAspectRows(aspectKey);
+    } else {
+        // Clear inputs if only 1 row remains
+        var textInp = row.querySelector('input[type="text"]');
+        if (textInp) textInp.value = '';
+        var radios = row.querySelectorAll('input[type="radio"]');
+        radios.forEach(function(r) { r.checked = false; });
+    }
+}
+
+function reindexAspectRows(aspectKey) {
+    var container = document.getElementById('container_' + aspectKey);
+    var rows = container.querySelectorAll('.activity-row');
+    rows.forEach(function(row, idx) {
+        row.id = 'row_' + aspectKey + '_' + idx;
+        var radios = row.querySelectorAll('input[type="radio"]');
+        radios.forEach(function(radio) {
+            radio.name = 'aspect_' + aspectKey + '_' + idx;
+        });
+    });
+}
+</script>
 {{end}}

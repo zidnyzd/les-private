@@ -46,24 +46,30 @@
                             {{range .Aspects}}
                             <tr>
                                 <td class="fw-semibold text-body small"><i class="ti ti-check-circle me-1.5 text-primary"></i>{{.Label}}</td>
-                                <td>
-                                    {{if .Kegiatan}}
-                                    <span class="text-body small">{{.Kegiatan}}</span>
+                                <td colspan="2" class="p-0">
+                                    {{if .Items}}
+                                    <div class="list-group list-group-flush">
+                                        {{range .Items}}
+                                        <div class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-3">
+                                            <span class="text-body small">{{if .Kegiatan}}{{.Kegiatan}}{{else}}<span class="text-muted fst-italic">-</span>{{end}}</span>
+                                            <div>
+                                                {{if eq .Score "Belum Berkembang"}}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1">Belum Berkembang</span>
+                                                {{else if eq .Score "Mulai Berkembang"}}
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1">Mulai Berkembang</span>
+                                                {{else if eq .Score "Berkembang Sesuai Harapan"}}
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Sesuai Harapan</span>
+                                                {{else if eq .Score "Berkembang Sangat Baik"}}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Sangat Baik</span>
+                                                {{else}}
+                                                <span class="text-muted small fst-italic">Belum dinilai</span>
+                                                {{end}}
+                                            </div>
+                                        </div>
+                                        {{end}}
+                                    </div>
                                     {{else}}
-                                    <span class="text-muted small fst-italic">-</span>
-                                    {{end}}
-                                </td>
-                                <td class="text-center">
-                                    {{if eq .Score "Belum Berkembang"}}
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2.5 py-1">Belum Berkembang</span>
-                                    {{else if eq .Score "Mulai Berkembang"}}
-                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2.5 py-1">Mulai Berkembang</span>
-                                    {{else if eq .Score "Berkembang Sesuai Harapan"}}
-                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2.5 py-1">Sesuai Harapan</span>
-                                    {{else if eq .Score "Berkembang Sangat Baik"}}
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1">Sangat Baik</span>
-                                    {{else}}
-                                    <span class="text-muted small fst-italic">Belum dinilai</span>
+                                    <div class="p-2 text-muted small fst-italic text-center">-</div>
                                     {{end}}
                                 </td>
                             </tr>
@@ -78,26 +84,33 @@
                         {{range .Aspects}}
                         <div class="col-12">
                             <div class="p-3 border rounded-3 bg-body-tertiary">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div class="fw-bold text-body small"><i class="ti ti-check-circle me-1 text-primary"></i>{{.Label}}</div>
-                                    <div>
-                                        {{if eq .Score "Belum Berkembang"}}
-                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Belum Berkembang</span>
-                                        {{else if eq .Score "Mulai Berkembang"}}
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Mulai Berkembang</span>
-                                        {{else if eq .Score "Berkembang Sesuai Harapan"}}
-                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sesuai Harapan</span>
-                                        {{else if eq .Score "Berkembang Sangat Baik"}}
-                                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sangat Baik</span>
-                                        {{else}}
-                                        <span class="text-muted small fst-italic" style="font-size:0.68rem;">Belum dinilai</span>
-                                        {{end}}
+                                <div class="fw-bold text-body small mb-2"><i class="ti ti-check-circle me-1 text-primary"></i>{{.Label}}</div>
+                                {{if .Items}}
+                                <div class="d-flex flex-column gap-2">
+                                    {{range .Items}}
+                                    <div class="p-2 border rounded-2 bg-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                            <div class="text-body small fw-medium">{{if .Kegiatan}}{{.Kegiatan}}{{else}}<span class="text-muted fst-italic">-</span>{{end}}</div>
+                                            <div>
+                                                {{if eq .Score "Belum Berkembang"}}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Belum Berkembang</span>
+                                                {{else if eq .Score "Mulai Berkembang"}}
+                                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Mulai Berkembang</span>
+                                                {{else if eq .Score "Berkembang Sesuai Harapan"}}
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sesuai Harapan</span>
+                                                {{else if eq .Score "Berkembang Sangat Baik"}}
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0.5" style="font-size:0.68rem;">Sangat Baik</span>
+                                                {{else}}
+                                                <span class="text-muted small fst-italic" style="font-size:0.68rem;">Belum dinilai</span>
+                                                {{end}}
+                                            </div>
+                                        </div>
                                     </div>
+                                    {{end}}
                                 </div>
-                                <div class="text-body small">
-                                    <span class="text-muted me-1">Kegiatan:</span>
-                                    {{if .Kegiatan}}{{.Kegiatan}}{{else}}<span class="text-muted fst-italic">-</span>{{end}}
-                                </div>
+                                {{else}}
+                                <div class="text-muted small fst-italic">-</div>
+                                {{end}}
                             </div>
                         </div>
                         {{end}}

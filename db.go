@@ -58,15 +58,15 @@ func initDB() {
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_meetings_teacher ON meetings(teacher_id)")
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_meetings_date ON meetings(date)")
 
-	// Assessments (penilaian 6 aspek per pertemuan)
+	// Assessments (penilaian aspek per pertemuan — mendukung multi-row per aspek)
 	db.Exec(`CREATE TABLE IF NOT EXISTS assessments (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		meeting_id INTEGER NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
 		aspect TEXT NOT NULL,
 		score TEXT NOT NULL DEFAULT '' CHECK(score IN ('','Belum Berkembang','Mulai Berkembang','Berkembang Sesuai Harapan','Berkembang Sangat Baik','masih berkembang','berkembang dengan baik')),
-		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		kegiatan TEXT DEFAULT '',
-		UNIQUE(meeting_id, aspect)
+		sort_order INTEGER DEFAULT 0,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`)
 	db.Exec("CREATE INDEX IF NOT EXISTS idx_assessments_meeting ON assessments(meeting_id)")
 
@@ -82,6 +82,7 @@ func initDB() {
 
 	// Migrations
 	db.Exec("ALTER TABLE assessments ADD COLUMN kegiatan TEXT DEFAULT ''")
+	db.Exec("ALTER TABLE assessments ADD COLUMN sort_order INTEGER DEFAULT 0")
 	db.Exec("ALTER TABLE students ADD COLUMN teacher_id INTEGER REFERENCES users(id)")
 	db.Exec("ALTER TABLE meetings ADD COLUMN teacher_id INTEGER REFERENCES users(id)")
 

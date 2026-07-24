@@ -655,11 +655,17 @@ func getAllStudents(user User) []Student {
 
 // ====== ASSESSMENT HANDLERS ======
 
-type AssessmentFormItem struct {
-	Key      string
-	Label    string
+type AssessmentSubItem struct {
+	ID       int
 	Kegiatan string
 	Score    string
+	Index    int
+}
+
+type AssessmentFormItem struct {
+	Key   string
+	Label string
+	Items []AssessmentSubItem
 }
 
 type MeetingDetailPageData struct {
@@ -698,14 +704,20 @@ func handleMeetingDetail(w http.ResponseWriter, r *http.Request) {
 			log.Printf("[ERROR] update meeting id=%s: %v", id, err)
 		}
 
-		// Save assessments (6 aspects)
+		// Clear existing assessments for this meeting before saving multi-row items
+		db.Exec("DELETE FROM assessments WHERE meeting_id=?", id)
+
+		// Save assessments (supporting multi-row per aspect)
 		for _, a := range aspects {
-			score := r.FormValue("aspect_" + a.Key)
-			kegiatan := r.FormValue("kegiatan_" + a.Key)
-			if score != "" || kegiatan != "" {
-				if _, err := db.Exec("INSERT OR REPLACE INTO assessments (meeting_id, aspect, score, kegiatan) VALUES (?,?,?,?)",
-					id, a.Key, score, kegiatan); err != nil {
-					log.Printf("[ERROR] save assessment meeting=%s aspect=%s: %v", id, a.Key, err)
+			kegs := r.Form["kegiatan_" + a.Key]
+			for idx, kg := range kegs {
+				score := r.FormValue(fmt.Sprintf("aspect_%s_%d", a.Key, idx))
+				kgTrim := strings.TrimSpace(kg)
+				if kgTrim != "" || score != "" {
+					if _, err := db.Exec("INSERT INTO assessments (meeting_id, aspect, score, kegiatan, sort_order) VALUES (?,?,?,?,?)",
+						id, a.Key, score, kgTrim, idx); err != nil {
+						log.Printf("[ERROR] save assessment meeting=%s aspect=%s idx=%d: %v", id, a.Key, idx, err)
+					}
 				}
 			}
 		}
@@ -714,27 +726,33 @@ func handleMeetingDetail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Load existing assessments
-	scoreMap := map[string]string{}
-	kegMap := map[string]string{}
-	rows, _ := db.Query("SELECT aspect, score, COALESCE(kegiatan,'') FROM assessments WHERE meeting_id=?", id)
-	if rows != nil {
+	// Load existing assessments grouping by aspect
+	itemMap := map[string][]AssessmentSubItem{}
+	rows, err := db.Query("SELECT id, aspect, score, COALESCE(kegiatan,'') FROM assessments WHERE meeting_id=? ORDER BY sort_order ASC, id ASC", id)
+	if err == nil && rows != nil {
 		for rows.Next() {
-			var k, v, kg string
-			rows.Scan(&k, &v, &kg)
-			scoreMap[k] = v
-			kegMap[k] = kg
+			var sub AssessmentSubItem
+			var aspect string
+			rows.Scan(&sub.ID, &aspect, &sub.Score, &sub.Kegiatan)
+			itemMap[aspect] = append(itemMap[aspect], sub)
 		}
 		rows.Close()
 	}
 
 	var items []AssessmentFormItem
 	for _, a := range aspects {
+		subs := itemMap[a.Key]
+		if len(subs) == 0 {
+			subs = []AssessmentSubItem{{Index: 0}}
+		} else {
+			for i := range subs {
+				subs[i].Index = i
+			}
+		}
 		items = append(items, AssessmentFormItem{
-			Key:      a.Key,
-			Label:    a.Label,
-			Kegiatan: kegMap[a.Key],
-			Score:    scoreMap[a.Key],
+			Key:   a.Key,
+			Label: a.Label,
+			Items: subs,
 		})
 	}
 

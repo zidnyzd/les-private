@@ -266,24 +266,35 @@ func handleParentMeetingDetail(w http.ResponseWriter, r *http.Request) {
 	m.FormattedDate = formatTanggalIndo(m.Date)
 	m.FormattedTime = fmt.Sprintf("%s - %s WIB", formatWaktuIndo(m.StartTime), formatWaktuIndo(m.EndTime))
 
-	// Get assessments (6 aspects)
-	type aspectItem struct {
-		Key      string
-		Label    string
+	// Get assessments (supporting multi-row per aspect)
+	type aspectSubItem struct {
 		Kegiatan string
 		Score    string
 	}
+	type aspectItem struct {
+		Key   string
+		Label string
+		Items []aspectSubItem
+	}
 	var aspectsList []aspectItem
 
+	itemMap := map[string][]aspectSubItem{}
+	rows, err := db.Query("SELECT aspect, COALESCE(score,''), COALESCE(kegiatan,'') FROM assessments WHERE meeting_id=? ORDER BY sort_order ASC, id ASC", m.ID)
+	if err == nil && rows != nil {
+		for rows.Next() {
+			var aspect, score, keg string
+			rows.Scan(&aspect, &score, &keg)
+			itemMap[aspect] = append(itemMap[aspect], aspectSubItem{Kegiatan: keg, Score: score})
+		}
+		rows.Close()
+	}
+
 	for _, a := range aspects {
-		var kegiatan, score string
-		db.QueryRow("SELECT COALESCE(kegiatan,''), COALESCE(score,'') FROM assessments WHERE meeting_id=? AND aspect=?", m.ID, a.Key).
-			Scan(&kegiatan, &score)
+		subs := itemMap[a.Key]
 		aspectsList = append(aspectsList, aspectItem{
-			Key:      a.Key,
-			Label:    a.Label,
-			Kegiatan: kegiatan,
-			Score:    score,
+			Key:   a.Key,
+			Label: a.Label,
+			Items: subs,
 		})
 	}
 
