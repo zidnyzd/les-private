@@ -84,45 +84,50 @@ func handleStudentNew(w http.ResponseWriter, r *http.Request) {
 
 		var parentID int
 
-		if parentMode == "new" {
+		if parentMode == "none" {
+			parentID = 0
+		} else if parentMode == "new" {
 			// Guru buat akun ortu baru
 			pUser := r.FormValue("parent_new_username")
 			pDisplay := r.FormValue("parent_new_display")
 			pPass := r.FormValue("parent_new_password")
 
-			if len(pUser) < 3 || len(pUser) > 20 {
-				renderStudentForm(w, r, user, Student{}, "Username ortu harus 3-20 karakter")
-				return
-			}
-			if len(pPass) < 6 || len(pPass) > 72 {
-				renderStudentForm(w, r, user, Student{}, "Password ortu harus 6-72 karakter")
-				return
-			}
-			if pDisplay == "" {
-				pDisplay = pUser
-			}
+			if pUser == "" && pPass == "" {
+				parentID = 0
+			} else {
+				if len(pUser) < 3 || len(pUser) > 20 {
+					renderStudentForm(w, r, user, Student{}, "Username ortu harus 3-20 karakter")
+					return
+				}
+				if len(pPass) < 6 || len(pPass) > 72 {
+					renderStudentForm(w, r, user, Student{}, "Password ortu harus 6-72 karakter")
+					return
+				}
+				if pDisplay == "" {
+					pDisplay = pUser
+				}
 
-			// Cek username ortu belum dipake
-			var exists int
-			db.QueryRow("SELECT COUNT(*) FROM users WHERE username=?", pUser).Scan(&exists)
-			if exists > 0 {
-				renderStudentForm(w, r, user, Student{}, "Username ortu '"+pUser+"' sudah digunakan")
-				return
-			}
+				// Cek username ortu belum dipake
+				var exists int
+				db.QueryRow("SELECT COUNT(*) FROM users WHERE username=?", pUser).Scan(&exists)
+				if exists > 0 {
+					renderStudentForm(w, r, user, Student{}, "Username ortu '"+pUser+"' sudah digunakan")
+					return
+				}
 
-			hash, _ := bcrypt.GenerateFromPassword([]byte(pPass), bcrypt.DefaultCost)
-			res, err := db.Exec("INSERT INTO users (username, display_name, password_hash, role) VALUES (?,?,?,?)",
-				pUser, pDisplay, string(hash), "ortu")
-			if err != nil {
-				log.Printf("[AUDIT] parent create fail err=%v", err)
-				renderStudentForm(w, r, user, Student{}, "Gagal membuat akun ortu")
-				return
+				hash, _ := bcrypt.GenerateFromPassword([]byte(pPass), bcrypt.DefaultCost)
+				res, err := db.Exec("INSERT INTO users (username, display_name, password_hash, role) VALUES (?,?,?,?)",
+					pUser, pDisplay, string(hash), "ortu")
+				if err != nil {
+					log.Printf("[AUDIT] parent create fail err=%v", err)
+					renderStudentForm(w, r, user, Student{}, "Gagal membuat akun ortu")
+					return
+				}
+				pid, _ := res.LastInsertId()
+				parentID = int(pid)
+				log.Printf("[AUDIT] parent create success user=%q by_guru=%s", pUser, user.Username)
 			}
-			pid, _ := res.LastInsertId()
-			parentID = int(pid)
-			log.Printf("[AUDIT] parent create success user=%q by_guru=%s", pUser, user.Username)
-
-		} else {
+		} else if parentMode == "existing" {
 			// Link ke akun ortu yang sudah ada
 			parentUser := r.FormValue("parent_username")
 			if parentUser != "" {
@@ -191,7 +196,9 @@ func handleStudentEdit(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var parentID int
-		if parentMode == "new" {
+		if parentMode == "none" {
+			parentID = 0
+		} else if parentMode == "new" {
 			pUser := r.FormValue("parent_new_username")
 			pDisplay := r.FormValue("parent_new_display")
 			pPass := r.FormValue("parent_new_password")
@@ -229,7 +236,10 @@ func handleStudentEdit(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		if parentID > 0 {
+		if parentMode == "none" {
+			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=NULL WHERE id=?",
+				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), id)
+		} else if parentID > 0 {
 			db.Exec("UPDATE students SET name=?, age=?, grade=?, address=?, parent_id=? WHERE id=?",
 				strings.TrimSpace(name), age, strings.TrimSpace(grade), strings.TrimSpace(address), parentID, id)
 		} else {

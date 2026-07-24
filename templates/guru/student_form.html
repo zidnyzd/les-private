@@ -51,7 +51,13 @@
                 {{end}}
 
                 <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="parent_mode" id="mode_existing" value="existing" checked onchange="toggleParentMode()">
+                    <input class="form-check-input" type="radio" name="parent_mode" id="mode_none" value="none" {{if not .EditMode}}checked{{else}}{{if not .Student.ParentID}}checked{{end}}{{end}} onchange="toggleParentMode()">
+                    <label class="form-check-label small" for="mode_none">
+                        Tanpa Orang Tua (Opsional / Ditautkan Nanti)
+                    </label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="parent_mode" id="mode_existing" value="existing" {{if .EditMode}}{{if .Student.ParentID}}checked{{end}}{{end}} onchange="toggleParentMode()">
                     <label class="form-check-label small" for="mode_existing">
                         {{if .EditMode}}Tetap / ganti ke akun yang sudah ada{{else}}Link ke akun yang sudah ada{{end}}
                     </label>
@@ -183,13 +189,19 @@ document.getElementById('parent_new_display').addEventListener('input', function
 });
 
 function toggleParentMode(){
-    var mode=document.querySelector('input[name="parent_mode"]:checked').value;
-    document.getElementById('existing_section').style.display=mode==='existing'?'block':'none';
-    document.getElementById('new_section').style.display=mode==='new'?'block':'none';
+    var checkedMode = document.querySelector('input[name="parent_mode"]:checked');
+    var mode = checkedMode ? checkedMode.value : 'none';
+    document.getElementById('existing_section').style.display = mode === 'existing' ? 'block' : 'none';
+    document.getElementById('new_section').style.display = mode === 'new' ? 'block' : 'none';
     
     if (mode === 'new') {
         quickFillParentInfo();
     }
+}
+if (document.readyState === "complete" || document.readyState === "interactive") {
+    setTimeout(toggleParentMode, 10);
+} else {
+    document.addEventListener("DOMContentLoaded", toggleParentMode);
 }
 
 function autoGenerateParentUsername() {
