@@ -135,12 +135,18 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 		pdf.SetFont("Helvetica", "", 8)
 		pdf.SetFillColor(255, 255, 255)
 		for i, ak := range aspectKeys {
-			entries := assessments[m.ID][ak]
-			if len(entries) == 0 {
-				entries = []map[string]string{{"kegiatan": "-", "score": ""}}
+			rawEntries := assessments[m.ID][ak]
+			var validEntries []map[string]string
+			for _, e := range rawEntries {
+				if strings.TrimSpace(e["kegiatan"]) != "" || e["score"] != "" {
+					validEntries = append(validEntries, e)
+				}
 			}
-			for j, entry := range entries {
-				// Aspek (only on first row)
+			if len(validEntries) == 0 {
+				continue // Skip rendering empty aspects completely
+			}
+			for j, entry := range validEntries {
+				// Aspek (only on first row of aspect)
 				if j == 0 {
 					pdf.CellFormat(colW[0], 7, aspectLabels[i], "1", 0, "L", false, 0, "")
 				} else {
@@ -148,7 +154,7 @@ func handleReportPDF(w http.ResponseWriter, r *http.Request) {
 				}
 
 				// Kegiatan
-				kg := entry["kegiatan"]
+				kg := strings.TrimSpace(entry["kegiatan"])
 				if kg == "" {
 					kg = "-"
 				}

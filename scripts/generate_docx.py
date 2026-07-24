@@ -207,15 +207,16 @@ def main():
         # Build rows data
         rows_data = []
         for ak, al in zip(aspect_keys, aspect_labels):
-            entries = assessments.get(mid, {}).get(ak, [])
-            if not entries:
-                entries = [{'kegiatan': '-', 'score': ''}]
-            for i, entry in enumerate(entries):
+            raw_entries = assessments.get(mid, {}).get(ak, [])
+            valid_entries = [e for e in raw_entries if e.get('kegiatan', '').strip() or e.get('score', '')]
+            if not valid_entries:
+                continue # Skip empty aspect rows
+            for i, entry in enumerate(valid_entries):
                 aspek_text = al if i == 0 else ''
                 score = entry['score']
                 rows_data.append({
                     'aspek': aspek_text,
-                    'kegiatan': entry['kegiatan'],
+                    'kegiatan': entry.get('kegiatan', '').strip(),
                     'BB': '✓' if score == 'Belum Berkembang' else '',
                     'MB': '✓' if score == 'Mulai Berkembang' else '',
                     'BSH': '✓' if score == 'Berkembang Sesuai Harapan' else '',
