@@ -36,29 +36,11 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
-    .icon-avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 1rem;
-    }
-    .topic-box {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 8px 12px;
-    }
 
     /* Dark Mode overrides for cards & buttons */
     [data-bs-theme="dark"] .mobile-meeting-card {
         background: #1e2024;
         border-color: #2c3035;
-    }
-    [data-bs-theme="dark"] .topic-box {
-        background: #262a2e;
     }
     [data-bs-theme="dark"] .btn-action-custom {
         background: #262a2e;
@@ -81,7 +63,7 @@
         <form id="filter_form" method="GET" action="/meetings" class="row g-2 align-items-end">
             <div class="col-md-5">
                 <label class="form-label small mb-1 fw-medium text-muted">Siswa</label>
-                <select name="student" id="filter_student_select" class="form-select form-select-sm rounded-2" onchange="document.getElementById('filter_form').submit()">
+                <select name="student" class="form-select form-select-sm rounded-2" onchange="document.getElementById('filter_form').submit()">
                     <option value="">Semua Siswa</option>
                     {{range .Students}}
                     <option value="{{.ID}}" {{if eq (printf "%d" .ID) $.FilterStudent}}selected{{end}}>{{.Name}}</option>
@@ -131,9 +113,9 @@
                         </td>
                         <td class="text-center pe-4">
                             <div class="d-flex gap-1 justify-content-center">
-                                <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-action-custom text-warning border px-2 py-1 rounded-2" title="Nilai"><i class="ti ti-star fs-6"></i></a>
+                                <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-action-custom text-warning border px-2 py-1 rounded-2" title="Nilai"><i class="ti ti-star fs-6"></i> Nilai</a>
                                 <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-action-custom text-muted border px-2 py-1 rounded-2" title="Edit"><i class="ti ti-pencil fs-6"></i></a>
-                                <a href="javascript:void(0)" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-action-custom text-danger border px-2 py-1 rounded-2" title="Hapus"><i class="ti ti-trash fs-6"></i></a>
+                                <button type="button" onclick="hapusPertemuan({{.ID}},'{{.Date}}')" class="btn btn-sm btn-action-custom text-danger border px-2 py-1 rounded-2" title="Hapus"><i class="ti ti-trash fs-6"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -168,7 +150,7 @@
                             </div>
                         </div>
 
-                        <!-- Bottom Actions Bar (Fully Responsive) -->
+                        <!-- Bottom Actions Bar -->
                         <div class="row g-2">
                             <div class="col-6">
                                 <a href="/meetings/detail?id={{.ID}}" class="btn btn-sm btn-outline-warning w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center gap-1" style="font-size:0.8rem;"><i class="ti ti-star"></i> Nilai</a>
@@ -177,7 +159,7 @@
                                 <a href="/meetings/edit?id={{.ID}}" class="btn btn-sm btn-outline-secondary w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Edit"><i class="ti ti-pencil"></i></a>
                             </div>
                             <div class="col-3">
-                                <a href="javascript:void(0)" onclick="hapus({{.ID}},'{{.Date}}')" class="btn btn-sm btn-outline-danger w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Hapus"><i class="ti ti-trash"></i></a>
+                                <button type="button" onclick="hapusPertemuan({{.ID}},'{{.Date}}')" class="btn btn-sm btn-outline-danger w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center" style="font-size:0.8rem;" title="Hapus"><i class="ti ti-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -198,71 +180,10 @@
 </div>
 
 <script>
-function hapus(id, date) {
+function hapusPertemuan(id, date) {
     if (confirm('Hapus pertemuan tanggal ' + date + '?\nSemua penilaian juga akan terhapus.')) {
-        window.location = '/meetings/delete?id=' + id;
+        window.location.href = '/meetings/delete?id=' + id;
     }
-}
-</script>
-
-<!-- TomSelect CSS & JS for Searchable Select Filter -->
-<link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-<style>
-/* TomSelect Dark Mode Compatibility */
-[data-bs-theme="dark"] .ts-control {
-    background-color: var(--bs-body-bg, #0f172a) !important;
-    border-color: var(--bs-border-color, #334155) !important;
-    color: var(--bs-body-color, #f8fafc) !important;
-}
-[data-bs-theme="dark"] .ts-control input {
-    color: var(--bs-body-color, #f8fafc) !important;
-}
-[data-bs-theme="dark"] .ts-dropdown {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
-    color: #f8fafc !important;
-}
-[data-bs-theme="dark"] .ts-dropdown .option {
-    color: #cbd5e1 !important;
-}
-[data-bs-theme="dark"] .ts-dropdown .option.active,
-[data-bs-theme="dark"] .ts-dropdown .option:hover {
-    background-color: #334155 !important;
-    color: #ffffff !important;
-}
-[data-bs-theme="dark"] .ts-wrapper.single .ts-control:after {
-    border-color: #94a3b8 transparent transparent transparent !important;
-}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-
-<script>
-function hapus(id, date) {
-    if (confirm('Hapus pertemuan tanggal ' + date + '?\nSemua penilaian juga akan terhapus.')) {
-        window.location = '/meetings/delete?id=' + id;
-    }
-}
-
-function initFilterStudentTomSelect() {
-    var el = document.getElementById('filter_student_select');
-    if (el && !el.tomselect) {
-        var ts = new TomSelect(el, {
-            create: false,
-            sortField: {
-                field: "text",
-                direction: "asc"
-            },
-            placeholder: "Semua Siswa"
-        });
-        ts.on('change', function(value) {
-            document.getElementById('filter_form').submit();
-        });
-    }
-}
-if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(initFilterStudentTomSelect, 50);
-} else {
-    document.addEventListener("DOMContentLoaded", initFilterStudentTomSelect);
 }
 </script>
 {{end}}
