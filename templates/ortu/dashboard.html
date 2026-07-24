@@ -51,25 +51,23 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Tanggal</th>
+                        <th class="ps-4">Tanggal</th>
                         <th>Waktu</th>
-                        <th>Tema</th>
                         <th class="text-center">Status</th>
-                        <th class="text-center" style="width:120px">Aksi</th>
+                        <th class="text-center pe-4" style="width:100px">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     {{range .Meetings}}
                     <tr>
-                        <td class="fw-semibold text-body">{{.FormattedDate}}</td>
+                        <td class="ps-4 fw-semibold text-body">{{.FormattedDate}}</td>
                         <td><small class="text-muted">{{.FormattedTime}}</small></td>
-                        <td>{{if .Topic}}<span class="text-body">{{.Topic}}</span>{{else}}<span class="text-muted">-</span>{{end}}</td>
                         <td class="text-center">
                             {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Terjadwal</span>{{end}}
                             {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Selesai</span>{{end}}
                             {{if eq .Status "batal"}}<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3 py-1">Batal</span>{{end}}
                         </td>
-                        <td class="text-center">
+                        <td class="text-center pe-4">
                             <a href="/parent/meeting/detail?id={{.ID}}" class="btn btn-sm btn-outline-primary rounded-2 py-1 px-2.5" title="Lihat Detail & Rapor">
                                 <i class="ti ti-eye me-1"></i>Detail
                             </a>
@@ -99,16 +97,8 @@
                             </div>
                         </div>
 
-                        <!-- Topic Box -->
-                        <div class="topic-box mt-2 mb-3">
-                            <div class="text-muted mb-1" style="font-size: 0.75rem;">Tema Belajar</div>
-                            <div class="text-body fw-medium" style="font-size: 0.85rem;">
-                                <i class="ti ti-book text-success me-1"></i> {{if .Topic}}{{.Topic}}{{else}}<span class="text-muted fst-italic">- belum ada tema -</span>{{end}}
-                            </div>
-                        </div>
-
                         <!-- Detail Action Button -->
-                        <a href="/parent/meeting/detail?id={{.ID}}" class="btn btn-sm btn-outline-primary w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center gap-1">
+                        <a href="/parent/meeting/detail?id={{.ID}}" class="btn btn-sm btn-outline-primary w-100 py-1.5 rounded-2 d-flex align-items-center justify-content-center gap-1 mt-2">
                             <i class="ti ti-eye"></i> Lihat Detail & Penilaian
                         </a>
                     </div>

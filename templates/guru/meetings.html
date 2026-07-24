@@ -114,7 +114,6 @@
                         <th class="ps-4">Tanggal</th>
                         <th>Waktu</th>
                         <th>Siswa</th>
-                        <th>Tema Belajar</th>
                         <th class="text-center">Status</th>
                         <th class="text-center pe-4" style="width:140px">Aksi</th>
                     </tr>
@@ -125,7 +124,6 @@
                         <td class="ps-4 fw-semibold text-body">{{.FormattedDate}}</td>
                         <td class="text-muted"><i class="ti ti-clock me-1 text-secondary"></i>{{.FormattedTime}}</td>
                         <td class="fw-semibold text-primary">{{.StudentName}}</td>
-                        <td>{{if .Topic}}{{.Topic}}{{else}}<span class="text-muted small italic">- belum diisi -</span>{{end}}</td>
                         <td class="text-center">
                             {{if eq .Status "terjadwal"}}<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill px-3 py-1">Terjadwal</span>{{end}}
                             {{if eq .Status "selesai"}}<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1">Selesai</span>{{end}}
@@ -163,13 +161,10 @@
                             </div>
                         </div>
                         
-                        <!-- Middle Section: Time & Topic -->
-                        <div class="topic-box mb-3" style="font-size: 0.8rem;">
-                            <div class="d-flex align-items-center gap-1 text-muted mb-1" style="font-size: 0.75rem;">
+                        <!-- Middle Section: Time -->
+                        <div class="mb-3" style="font-size: 0.8rem;">
+                            <div class="d-flex align-items-center gap-1 text-muted" style="font-size: 0.75rem;">
                                 <i class="ti ti-clock text-secondary"></i> <span>{{.FormattedTime}}</span>
-                            </div>
-                            <div class="text-body fw-medium">
-                                <i class="ti ti-book text-success me-1"></i> {{if .Topic}}{{.Topic}}{{else}}<span class="text-muted italic">- belum ada tema -</span>{{end}}
                             </div>
                         </div>
 

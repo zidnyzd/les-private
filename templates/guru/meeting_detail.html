@@ -32,15 +32,7 @@
         <div class="card border-0 shadow-sm">
             <div class="card-body">
                 <div class="mb-3">
-                    <label class="form-label small fw-medium">Tema Belajar</label>
-                    <input type="text" name="topic" class="form-control" value="{{.Meeting.Topic}}" placeholder="Contoh: Membaca suku kata">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-medium">Catatan</label>
-                    <textarea name="notes" class="form-control" rows="2" placeholder="Catatan tambahan...">{{.Meeting.Notes}}</textarea>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label small fw-medium">Status</label>
+                    <label class="form-label small fw-medium">Status Pertemuan</label>
                     <select name="status" class="form-select">
                         <option value="terjadwal" {{if eq .Meeting.Status "terjadwal"}}selected{{end}}>📅 Terjadwal</option>
                         <option value="selesai" {{if eq .Meeting.Status "selesai"}}selected{{end}}>✅ Selesai</option>

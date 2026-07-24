@@ -49,8 +49,7 @@
             <table class="table table-bordered mb-0 small">
                 <thead class="table-light">
                     <tr>
-                        <th style="min-width:100px">Tanggal</th>
-                        <th>Tema</th>
+                        <th style="min-width:140px">Tanggal & Waktu</th>
                         {{range $i, $a := $.Summary}}
                         <th style="min-width:90px;text-align:center">{{$a.Label}}</th>
                         {{end}}
@@ -63,7 +62,6 @@
                             <div>{{$m.Date}}</div>
                             <small class="text-muted" style="font-size:0.75rem;"><i class="ti ti-clock me-1"></i>{{$m.Time}}</small>
                         </td>
-                        <td>{{if $m.Topic}}{{$m.Topic}}{{else}}-{{end}}</td>
                         {{range $item := $m.Items}}
                             <td class="text-center text-dark" style="font-size:0.75rem{{if eq $item.Score "Belum Berkembang"}};background:#f8d7da{{else if eq $item.Score "Mulai Berkembang"}};background:#fff3cd{{else if eq $item.Score "Berkembang Sesuai Harapan"}};background:#d1ecf1{{else if eq $item.Score "Berkembang Sangat Baik"}};background:#d4edda{{end}}">
                                 {{if $item.Score}}
